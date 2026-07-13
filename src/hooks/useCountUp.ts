@@ -22,7 +22,7 @@ export function useCountUp({ target, duration = 2000, enabled = true }: UseCount
           hasAnimated.current = true;
           const startTime = performance.now();
 
-          function update(currentTime: number) {
+          const update = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
             const eased = 1 - Math.pow(1 - progress, 3);
@@ -31,7 +31,7 @@ export function useCountUp({ target, duration = 2000, enabled = true }: UseCount
             if (progress < 1) {
               requestAnimationFrame(update);
             }
-          }
+          };
 
           requestAnimationFrame(update);
         }
