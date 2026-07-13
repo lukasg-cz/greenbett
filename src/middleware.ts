@@ -4,6 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 const protectedRoutes = ['/dashboard', '/admin'];
 const adminRoutes = ['/admin'];
 
+type CookieToSet = {
+  name: string;
+  value: string;
+  options?: Parameters<NextResponse['cookies']['set']>[2];
+};
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -26,7 +32,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieToSet[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
