@@ -1,12 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { LeagueStatsGrid } from '@/components/stats/LeagueStatsGrid';
 import { MOCK_LEAGUE_STATS } from '@/lib/api/mock-data';
+import { isValidSport } from '@/lib/sport-utils';
+import type { Sport } from '@/types';
 
-export default function StatistikyPage() {
-  const [activeSport, setActiveSport] = useState('football');
+function StatistikyContent() {
+  const searchParams = useSearchParams();
+  const sportParam = searchParams.get('sport');
+  const initialSport: Sport = isValidSport(sportParam) ? sportParam : 'football';
+  const [activeSport, setActiveSport] = useState<Sport>(initialSport);
 
   return (
     <section className="page-section">
@@ -22,9 +28,17 @@ export default function StatistikyPage() {
         <LeagueStatsGrid
           leagues={MOCK_LEAGUE_STATS}
           activeSport={activeSport}
-          onSportChange={setActiveSport}
+          onSportChange={(sport) => setActiveSport(sport as Sport)}
         />
       </div>
     </section>
+  );
+}
+
+export default function StatistikyPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Načítání...</div>}>
+      <StatistikyContent />
+    </Suspense>
   );
 }

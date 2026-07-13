@@ -8,6 +8,9 @@ const filters = [
   { id: 'hockey', label: '🏒 Hokej' },
   { id: 'basketball', label: '🏀 Basketbal' },
   { id: 'tennis', label: '🎾 Tenis' },
+  { id: 'baseball', label: '⚾ Baseball' },
+  { id: 'amfootball', label: '🏈 Am. fotbal' },
+  { id: 'esports', label: '🎮 Esporty' },
   { id: 'ev5', label: 'EV 5%+' },
   { id: 'ev10', label: 'EV 10%+' },
 ];

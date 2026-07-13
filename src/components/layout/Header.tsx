@@ -50,7 +50,7 @@ export function Header() {
               <div className="grid grid-cols-1 gap-0">
                 <MegaItem href="/leaderboard" icon="fa-trophy" title="Tipérský Leaderboard" description="Žebříček nejúspěšnějších tipérů" />
                 <MegaItem href="/forum" icon="fa-comments" title="Fórum & Diskuze" description="Diskutuj o zápasech a strategiích" />
-                <MegaItem href="#" icon="fa-paper-plane" title="Telegram skupina" description="Připoj se k 1 800+ aktivním členům" />
+                <MegaItem href="/kontakt" icon="fa-paper-plane" title="Telegram skupina" description="Připoj se k 1 800+ aktivním členům" />
               </div>
             </MegaDropdown>
           </li>
@@ -64,16 +64,16 @@ export function Header() {
               <div className="grid grid-cols-2 gap-0">
                 <div>
                   <MegaTitle>Naučit se</MegaTitle>
-                  <MegaItem href="#" icon="fa-book" title="Škola sázení" description="Články a návody pro začátečníky i pokročilé" />
-                  <MegaItem href="#" icon="fa-spell-check" title="Glosář pojmů" description="Value bet, EV, yield, handicap..." />
-                  <MegaItem href="#" icon="fa-question-circle" title="FAQ" description="Odpovědi na časté dotazy" />
+                  <MegaItem href="/skola" icon="fa-book" title="Škola sázení" description="Články a návody pro začátečníky i pokročilé" />
+                  <MegaItem href="/glosar" icon="fa-spell-check" title="Glosář pojmů" description="Value bet, EV, yield, handicap..." />
+                  <MegaItem href="/faq" icon="fa-question-circle" title="FAQ" description="Odpovědi na časté dotazy" />
                 </div>
                 <div>
                   <MegaTitle>Jak začít</MegaTitle>
                   <MegaItem href="/registrace" icon="fa-rocket" title="Zkušební přístup" description="7 dní zdarma, žádná karta" />
                   <MegaItem href="/cenik" icon="fa-tags" title="Cenové plány" description="Měsíční, kvartální, roční" />
                   <MegaSection title="O nás">
-                    <MegaItem href="#" icon="fa-users" title="Náš tým" description="Kdo za Greenbett stojí" />
+                    <MegaItem href="/o-nas" icon="fa-users" title="Náš tým" description="Kdo za Greenbett stojí" />
                   </MegaSection>
                 </div>
               </div>

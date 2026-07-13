@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { FilterButton } from '@/components/ui/FilterButton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { MOCK_SIGNALS } from '@/lib/api/mock-data';
 import { getSportEmoji } from '@/lib/utils';
+import { isValidSport } from '@/lib/sport-utils';
 import type { Signal } from '@/types';
 
 const sportFilters = [
@@ -13,6 +16,8 @@ const sportFilters = [
   { id: 'hockey', label: '🏒 Hokej' },
   { id: 'basketball', label: '🏀 Basketbal' },
   { id: 'tennis', label: '🎾 Tenis' },
+  { id: 'baseball', label: '⚾ Baseball' },
+  { id: 'amfootball', label: '🏈 Am. fotbal' },
   { id: 'esports', label: '🎮 Esporty' },
 ];
 
@@ -28,8 +33,11 @@ function computeStats(signals: Signal[]) {
   return { hitRate, profit: profit.toFixed(1), roi, total: signals.length };
 }
 
-export default function VysledkyPage() {
-  const [sportFilter, setSportFilter] = useState('all');
+function VysledkyContent() {
+  const searchParams = useSearchParams();
+  const sportParam = searchParams.get('sport');
+  const initialFilter = sportParam === 'all' || !sportParam ? 'all' : isValidSport(sportParam) ? sportParam : 'all';
+  const [sportFilter, setSportFilter] = useState(initialFilter);
 
   const filtered = useMemo(() => {
     if (sportFilter === 'all') return MOCK_SIGNALS;
@@ -69,41 +77,57 @@ export default function VysledkyPage() {
           ))}
         </div>
 
-        <table className="w-full border-separate border-spacing-y-1.5">
-          <thead>
-            <tr>
-              {['Datum', 'Zápas', 'Trh', 'Kurz', 'Confidence', 'Výsledek'].map((col) => (
-                <th key={col} className="text-left px-4 py-3 text-[0.68rem] font-bold uppercase tracking-[2px] text-gray-400">{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((signal) => (
-              <tr key={signal.id} className="bg-dark-card hover:bg-dark-card-hover transition-all">
-                <td className="px-4 py-4 text-[0.85rem] text-gray-400 rounded-l">
-                  {new Date(signal.createdAt).toLocaleDateString('cs-CZ')}
-                </td>
-                <td className="px-4 py-4 text-[0.85rem] font-semibold">
-                  {getSportEmoji(signal.sport)} {signal.matchHome} vs {signal.matchAway}
-                </td>
-                <td className="px-4 py-4 text-[0.85rem]">{signal.market}</td>
-                <td className="px-4 py-4 text-[0.85rem] font-bold">{signal.odds}</td>
-                <td className="px-4 py-4 text-[0.85rem]">{signal.confidence}/10</td>
-                <td className="px-4 py-4 rounded-r">
-                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                    signal.status === 'win' ? 'bg-green/15 text-green' :
-                    signal.status === 'loss' ? 'bg-red/15 text-red' :
-                    signal.status === 'void' ? 'bg-yellow/15 text-yellow' :
-                    'bg-gray-700 text-gray-300'
-                  }`}>
-                    {signal.status}
-                  </span>
-                </td>
+        {filtered.length > 0 ? (
+          <table className="w-full border-separate border-spacing-y-1.5">
+            <thead>
+              <tr>
+                {['Datum', 'Zápas', 'Trh', 'Kurz', 'Confidence', 'Výsledek'].map((col) => (
+                  <th key={col} className="text-left px-4 py-3 text-[0.68rem] font-bold uppercase tracking-[2px] text-gray-400">{col}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((signal) => (
+                <tr key={signal.id} className="bg-dark-card hover:bg-dark-card-hover transition-all">
+                  <td className="px-4 py-4 text-[0.85rem] text-gray-400 rounded-l">
+                    {new Date(signal.createdAt).toLocaleDateString('cs-CZ')}
+                  </td>
+                  <td className="px-4 py-4 text-[0.85rem] font-semibold">
+                    {getSportEmoji(signal.sport)} {signal.matchHome} vs {signal.matchAway}
+                  </td>
+                  <td className="px-4 py-4 text-[0.85rem]">{signal.market}</td>
+                  <td className="px-4 py-4 text-[0.85rem] font-bold">{signal.odds}</td>
+                  <td className="px-4 py-4 text-[0.85rem]">{signal.confidence}/10</td>
+                  <td className="px-4 py-4 rounded-r">
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                      signal.status === 'win' ? 'bg-green/15 text-green' :
+                      signal.status === 'loss' ? 'bg-red/15 text-red' :
+                      signal.status === 'void' ? 'bg-yellow/15 text-yellow' :
+                      'bg-gray-700 text-gray-300'
+                    }`}>
+                      {signal.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <EmptyState
+            icon="fa-chart-line"
+            title="Žádné signály"
+            description="Pro vybraný sport zatím nejsou žádné zaznamenané signály."
+          />
+        )}
       </div>
     </section>
+  );
+}
+
+export default function VysledkyPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Načítání...</div>}>
+      <VysledkyContent />
+    </Suspense>
   );
 }

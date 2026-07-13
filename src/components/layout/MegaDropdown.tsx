@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 interface MegaItem {
@@ -34,6 +35,7 @@ interface MegaDropdownProps {
 }
 
 export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProps) {
+  const router = useRouter();
   const [activeSport, setActiveSport] = useState('football');
 
   return (
@@ -57,6 +59,7 @@ export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProp
                 onClick={(e) => {
                   e.preventDefault();
                   setActiveSport(sport.id);
+                  router.push(`/sporty?sport=${sport.id}`);
                 }}
               >
                 {sport.label}

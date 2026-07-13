@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import type { Match } from '@/types';
 
 interface MatchCardProps {
@@ -5,6 +8,8 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match }: MatchCardProps) {
+  const [selectedOdd, setSelectedOdd] = useState<number | null>(null);
+
   return (
     <div className="bg-dark-card border border-gray-700 rounded p-5 transition-all hover:border-green">
       <div className="flex justify-between items-center mb-4">
@@ -41,15 +46,28 @@ export function MatchCard({ match }: MatchCardProps) {
 
       <div className="grid grid-cols-3 gap-2">
         {(['1', 'X', '2'] as const).map((label, i) => (
-          <div
+          <button
             key={label}
-            className="text-center p-2.5 bg-gray-800 rounded-sm cursor-pointer transition-all hover:bg-green hover:text-black group"
+            type="button"
+            onClick={() => setSelectedOdd(selectedOdd === i ? null : i)}
+            className={`text-center p-2.5 rounded-sm cursor-pointer transition-all ${
+              selectedOdd === i
+                ? 'bg-green text-black'
+                : 'bg-gray-800 hover:bg-green hover:text-black group'
+            }`}
           >
-            <div className="text-[0.6rem] text-gray-400 uppercase group-hover:text-black">{label}</div>
+            <div className={`text-[0.6rem] uppercase ${selectedOdd === i ? 'text-black' : 'text-gray-400 group-hover:text-black'}`}>
+              {label}
+            </div>
             <div className="text-base font-bold mt-0.5">{match.odds[i]}</div>
-          </div>
+          </button>
         ))}
       </div>
+      {selectedOdd !== null && (
+        <p className="text-[0.75rem] text-green mt-3 text-center">
+          Kurz {['1', 'X', '2'][selectedOdd]} ({match.odds[selectedOdd]}) vybrán — přidej do tiketu
+        </p>
+      )}
     </div>
   );
 }

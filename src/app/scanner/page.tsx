@@ -1,13 +1,19 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ScannerFilters } from '@/components/scanner/ScannerFilters';
 import { ScannerTable } from '@/components/scanner/ScannerTable';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { MOCK_VALUE_BETS } from '@/lib/api/mock-data';
+import { isValidSport } from '@/lib/sport-utils';
 
-export default function ScannerPage() {
-  const [filter, setFilter] = useState('all');
+function ScannerContent() {
+  const searchParams = useSearchParams();
+  const sportParam = searchParams.get('sport');
+  const initialFilter = sportParam === 'all' || !sportParam ? 'all' : isValidSport(sportParam) ? sportParam : 'all';
+  const [filter, setFilter] = useState(initialFilter);
 
   const filtered = useMemo(() => {
     let bets = MOCK_VALUE_BETS;
@@ -31,8 +37,24 @@ export default function ScannerPage() {
         </p>
 
         <ScannerFilters active={filter} onChange={setFilter} />
-        <ScannerTable bets={filtered} />
+        {filtered.length > 0 ? (
+          <ScannerTable bets={filtered} />
+        ) : (
+          <EmptyState
+            icon="fa-search-dollar"
+            title="Žádné value bety"
+            description="Pro vybraný filtr nebyly nalezeny žádné sázky s kladnou očekávanou hodnotou. Zkus snížit EV práh nebo změnit sport."
+          />
+        )}
       </div>
     </section>
+  );
+}
+
+export default function ScannerPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Načítání...</div>}>
+      <ScannerContent />
+    </Suspense>
   );
 }

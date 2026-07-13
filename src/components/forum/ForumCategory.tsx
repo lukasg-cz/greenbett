@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ForumCategory } from '@/types';
 
 interface ForumCategoryCardProps {
@@ -15,7 +16,10 @@ const iconMap: Record<string, string> = {
 
 export function ForumCategoryCard({ category }: ForumCategoryCardProps) {
   return (
-    <div className="bg-dark-card border border-gray-700 rounded p-5 px-6 grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto] gap-5 items-center transition-all hover:border-green cursor-pointer">
+    <Link
+      href={`/forum/${category.id}`}
+      className="bg-dark-card border border-gray-700 rounded p-5 px-6 grid grid-cols-1 md:grid-cols-[auto_1fr_auto_auto] gap-5 items-center transition-all hover:border-green cursor-pointer no-underline text-inherit"
+    >
       <div className="w-12 h-12 bg-green rounded-sm flex items-center justify-center text-black text-xl">
         <i className={`fas ${iconMap[category.icon] ?? 'fa-comments'}`} />
       </div>
@@ -33,6 +37,6 @@ export function ForumCategoryCard({ category }: ForumCategoryCardProps) {
           {category.latestAuthor} · {category.latestTime}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

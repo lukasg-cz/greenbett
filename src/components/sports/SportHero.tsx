@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/Button';
 import { FloatingLogos } from './FloatingLogos';
+import type { Sport } from '@/types';
 
 interface SportHeroProps {
+  sport: Sport;
   leagues: string;
   signals: string;
   title: string;
@@ -12,6 +14,7 @@ interface SportHeroProps {
 }
 
 export function SportHero({
+  sport,
   leagues,
   signals,
   title,
@@ -36,7 +39,10 @@ export function SportHero({
           {titleSuffix ? ` ${titleSuffix}` : ''}
         </h2>
         <p className="text-gray-400 text-[0.95rem] leading-relaxed mb-6">{description}</p>
-        <Button href="/vysledky">Zobrazit signály →</Button>
+        <div className="flex gap-3 flex-wrap">
+          <Button href={`/vysledky?sport=${sport}`}>Zobrazit signály →</Button>
+          <Button href={`/live?sport=${sport}`} variant="outline">Live dashboard</Button>
+        </div>
       </div>
       <FloatingLogos logos={logos} />
     </div>

@@ -1,14 +1,20 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { LiveIndicator } from '@/components/live/LiveIndicator';
 import { SportFilter } from '@/components/live/SportFilter';
 import { MatchCard } from '@/components/live/MatchCard';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { MOCK_MATCHES } from '@/lib/api/mock-data';
+import { isValidSport } from '@/lib/sport-utils';
 
-export default function LivePage() {
-  const [filter, setFilter] = useState('all');
+function LiveContent() {
+  const searchParams = useSearchParams();
+  const sportParam = searchParams.get('sport');
+  const initialFilter = sportParam === 'all' || !sportParam ? 'all' : isValidSport(sportParam) ? sportParam : 'all';
+  const [filter, setFilter] = useState(initialFilter);
 
   const filtered = useMemo(() => {
     if (filter === 'all') return MOCK_MATCHES;
@@ -34,11 +40,25 @@ export default function LivePage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-4">
-          {filtered.map((match, i) => (
-            <MatchCard key={i} match={match} />
-          ))}
+          {filtered.length > 0 ? (
+            filtered.map((match, i) => <MatchCard key={`${match.league}-${match.home}-${i}`} match={match} />)
+          ) : (
+            <EmptyState
+              icon="fa-tv"
+              title="Žádné zápasy"
+              description="Pro vybraný sport momentálně nejsou žádné zápasy. Zkus jiný filtr nebo se vrať později."
+            />
+          )}
         </div>
       </div>
     </section>
+  );
+}
+
+export default function LivePage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-gray-400">Načítání...</div>}>
+      <LiveContent />
+    </Suspense>
   );
 }

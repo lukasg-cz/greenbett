@@ -42,17 +42,17 @@ export function Footer() {
               links: [
                 { href: '/leaderboard', label: 'Leaderboard' },
                 { href: '/forum', label: 'Fórum' },
-                { href: '#', label: 'Telegram' },
-                { href: '#', label: 'Discord' },
+                { href: '/kontakt', label: 'Telegram' },
+                { href: '/kontakt', label: 'Discord' },
               ],
             },
             {
               title: 'Společnost',
               links: [
-                { href: '#', label: 'O nás' },
-                { href: '#', label: 'Podmínky' },
-                { href: '#', label: 'Soukromí' },
-                { href: '#', label: 'Kontakt' },
+                { href: '/o-nas', label: 'O nás' },
+                { href: '/podminky', label: 'Podmínky' },
+                { href: '/soukromi', label: 'Soukromí' },
+                { href: '/kontakt', label: 'Kontakt' },
               ],
             },
           ].map((col) => (
@@ -78,10 +78,15 @@ export function Footer() {
             © 2024 GREENBETT. Všechna práva vyhrazena. 18+ · Sázení je rizikové.
           </p>
           <div className="flex gap-4">
-            {['fa-telegram-plane', 'fa-instagram', 'fa-discord', 'fa-twitter'].map((icon) => (
-              <a key={icon} href="#" className="text-gray-400 text-lg hover:text-green transition-all">
-                <i className={`fab ${icon}`} />
-              </a>
+            {[
+              { icon: 'fa-telegram-plane', href: '/kontakt' },
+              { icon: 'fa-instagram', href: '/kontakt' },
+              { icon: 'fa-discord', href: '/kontakt' },
+              { icon: 'fa-twitter', href: '/kontakt' },
+            ].map((social) => (
+              <Link key={social.icon} href={social.href} className="text-gray-400 text-lg hover:text-green transition-all">
+                <i className={`fab ${social.icon}`} />
+              </Link>
             ))}
           </div>
         </div>

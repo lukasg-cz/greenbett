@@ -1,13 +1,18 @@
 'use client';
 
-import type { LeagueStat } from '@/types';
+import type { LeagueStat, Sport } from '@/types';
 import { LeagueStatCard } from './LeagueStatCard';
 import { FilterButton } from '@/components/ui/FilterButton';
+import { EmptyState } from '@/components/ui/EmptyState';
 
-const sportFilters = [
+const sportFilters: Array<{ id: Sport; label: string }> = [
   { id: 'football', label: '⚽ Fotbal' },
   { id: 'hockey', label: '🏒 Hokej' },
   { id: 'basketball', label: '🏀 Basketbal' },
+  { id: 'tennis', label: '🎾 Tenis' },
+  { id: 'baseball', label: '⚾ Baseball' },
+  { id: 'amfootball', label: '🏈 Am. fotbal' },
+  { id: 'esports', label: '🎮 Esporty' },
 ];
 
 interface LeagueStatsGridProps {
@@ -32,9 +37,15 @@ export function LeagueStatsGrid({ leagues, activeSport, onSportChange }: LeagueS
         ))}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((league) => (
-          <LeagueStatCard key={league.league} league={league} />
-        ))}
+        {filtered.length > 0 ? (
+          filtered.map((league) => <LeagueStatCard key={league.league} league={league} />)
+        ) : (
+          <EmptyState
+            icon="fa-chart-bar"
+            title="Statistiky se připravují"
+            description="Pro tento sport zatím nemáme dostupné ligové statistiky. Data budou doplněna brzy."
+          />
+        )}
       </div>
     </>
   );
