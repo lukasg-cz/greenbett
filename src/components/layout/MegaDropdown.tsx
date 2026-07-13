@@ -59,7 +59,7 @@ export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProp
                 onClick={(e) => {
                   e.preventDefault();
                   setActiveSport(sport.id);
-                  router.push(`/sporty?sport=${sport.id}`);
+                  router.push(`/sporty/${sport.id}`);
                 }}
               >
                 {sport.label}
@@ -70,7 +70,11 @@ export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProp
             {sportItems.map((item) => (
               <Link
                 key={item.title}
-                href={`${item.href}${showSportTabs ? `?sport=${activeSport}` : ''}`}
+                href={
+                  item.href === '/sporty'
+                    ? `/sporty/${activeSport}`
+                    : `${item.href}?sport=${activeSport}`
+                }
                 className="flex items-start gap-3.5 p-3.5 px-4 rounded-sm transition-all hover:bg-off-white no-underline cursor-pointer"
               >
                 <div className="w-10 h-10 min-w-10 bg-gradient-to-br from-green to-green-dark rounded-sm flex items-center justify-center text-black">

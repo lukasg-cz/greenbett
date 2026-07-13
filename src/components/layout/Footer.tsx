@@ -21,11 +21,11 @@ export function Footer() {
             {
               title: 'Sporty',
               links: [
-                { href: '/sporty', label: 'Fotbal' },
-                { href: '/sporty?sport=hockey', label: 'Hokej' },
-                { href: '/sporty?sport=basketball', label: 'Basketbal' },
-                { href: '/sporty?sport=tennis', label: 'Tenis' },
-                { href: '/sporty?sport=esports', label: 'Esporty' },
+                { href: '/sporty/football', label: 'Fotbal' },
+                { href: '/sporty/hockey', label: 'Hokej' },
+                { href: '/sporty/basketball', label: 'Basketbal' },
+                { href: '/sporty/tennis', label: 'Tenis' },
+                { href: '/sporty/esports', label: 'Esporty' },
               ],
             },
             {

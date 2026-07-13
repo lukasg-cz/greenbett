@@ -1,16 +1,13 @@
-import { Metadata } from 'next';
-import { Suspense } from 'react';
-import { SportInstruments } from './SportInstruments';
+import { redirect } from 'next/navigation';
+import { isValidSport } from '@/lib/sport-utils';
 
-export const metadata: Metadata = {
-  title: 'Sporty',
-  description: 'Analytické sázení na fotbal, hokej, basketbal, tenis, baseball, am. fotbal a esporty.',
-};
+interface SportyIndexPageProps {
+  searchParams: { sport?: string };
+}
 
-export default function SportyPage() {
-  return (
-    <Suspense fallback={<div className="py-20 text-center text-gray-400">Načítání...</div>}>
-      <SportInstruments />
-    </Suspense>
-  );
+export default function SportyIndexPage({ searchParams }: SportyIndexPageProps) {
+  if (searchParams.sport && isValidSport(searchParams.sport)) {
+    redirect(`/sporty/${searchParams.sport}`);
+  }
+  redirect('/sporty/football');
 }

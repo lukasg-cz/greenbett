@@ -34,7 +34,7 @@ export function Hero() {
 
           <div className="flex gap-3.5 mb-9 flex-wrap">
             <Button href="/registrace">Začít zdarma →</Button>
-            <Button variant="outline" href="/sporty">Prozkoumat sporty ⚽</Button>
+            <Button variant="outline" href="/sporty/football">Prozkoumat sporty ⚽</Button>
           </div>
 
           <div className="flex gap-8 flex-wrap">
