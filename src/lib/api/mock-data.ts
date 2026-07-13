@@ -1,0 +1,155 @@
+import type { Match, ValueBet, LeaderboardEntry, LeagueStat, Signal, ForumCategory } from '@/types';
+
+export const MOCK_MATCHES: Match[] = [
+  { league: 'Premier League', home: 'Arsenal', away: 'Chelsea', homeIcon: '🔴', awayIcon: '🔵', score: '2 : 1', time: "67'", live: true, sport: 'football', odds: ['3.20', '3.50', '2.10'] },
+  { league: 'La Liga', home: 'Real Madrid', away: 'Barcelona', homeIcon: '⚪', awayIcon: '🔵🔴', score: '0 : 0', time: "23'", live: true, sport: 'football', odds: ['2.40', '3.30', '2.80'] },
+  { league: 'Bundesliga', home: 'Bayern', away: 'Dortmund', homeIcon: '🔴', awayIcon: '🟡', score: '— : —', time: '18:30', live: false, sport: 'football', odds: ['1.65', '4.00', '4.50'] },
+  { league: 'Chance Liga', home: 'Sparta', away: 'Slavia', homeIcon: '🟤', awayIcon: '🔴⚪', score: '— : —', time: '20:00', live: false, sport: 'football', odds: ['2.10', '3.40', '3.20'] },
+  { league: 'NHL', home: 'Colorado', away: 'Tampa Bay', homeIcon: '🏔️', awayIcon: '⚡', score: '3 : 2', time: 'P2 · 14:22', live: true, sport: 'hockey', odds: ['1.55', '—', '2.35'] },
+  { league: 'NBA', home: 'Lakers', away: 'Celtics', homeIcon: '💜', awayIcon: '☘️', score: '— : —', time: '02:00', live: false, sport: 'basketball', odds: ['2.20', '—', '1.70'] },
+];
+
+export const MOCK_VALUE_BETS: ValueBet[] = [
+  { match: 'Arsenal vs Chelsea', league: 'Premier League', market: 'Over 2.5', odds: '1.95', fair: '1.72', ev: '13.4%', evClass: 'ev-high', conf: '8.1', sport: 'football', evPercent: 13.4 },
+  { match: 'Bayern vs Dortmund', league: 'Bundesliga', market: 'BTTS Ano', odds: '1.80', fair: '1.65', ev: '9.1%', evClass: 'ev-medium', conf: '7.4', sport: 'football', evPercent: 9.1 },
+  { match: 'Sparta vs Slavia', league: 'Chance Liga', market: 'Over 2.5', odds: '1.82', fair: '1.68', ev: '8.3%', evClass: 'ev-medium', conf: '7.8', sport: 'football', evPercent: 8.3 },
+  { match: 'Djokovic vs Alcaraz', league: 'ATP Wimbledon', market: 'Over 22.5 gamů', odds: '1.78', fair: '1.55', ev: '14.8%', evClass: 'ev-high', conf: '8.5', sport: 'tennis', evPercent: 14.8 },
+  { match: 'Real Madrid vs Barcelona', league: 'La Liga', market: '1X', odds: '1.45', fair: '1.38', ev: '5.1%', evClass: 'ev-low', conf: '7.0', sport: 'football', evPercent: 5.1 },
+  { match: 'Colorado vs Tampa Bay', league: 'NHL', market: 'Over 5.5', odds: '1.90', fair: '1.70', ev: '11.8%', evClass: 'ev-high', conf: '7.9', sport: 'hockey', evPercent: 11.8 },
+  { match: 'NAVI vs FaZe', league: 'CS2 Major', market: 'NAVI ML', odds: '2.10', fair: '1.85', ev: '13.5%', evClass: 'ev-high', conf: '7.2', sport: 'esports', evPercent: 13.5 },
+  { match: 'Lakers vs Celtics', league: 'NBA', market: 'Under 215.5', odds: '1.88', fair: '1.75', ev: '7.4%', evClass: 'ev-medium', conf: '6.8', sport: 'basketball', evPercent: 7.4 },
+];
+
+export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
+  { rank: 1, name: 'ProTipér_CZ', initials: 'PT', tips: 342, hitRate: '68%', roi: '+24.3%', profit: '+82.1', streak: '🔥 W7' },
+  { rank: 2, name: 'DataKing', initials: 'DK', tips: 289, hitRate: '65%', roi: '+19.8%', profit: '+57.2', streak: 'W3' },
+  { rank: 3, name: 'ValueHunter', initials: 'VH', tips: 456, hitRate: '62%', roi: '+17.1%', profit: '+78.0', streak: 'L1' },
+  { rank: 4, name: 'BetMaster99', initials: 'BM', tips: 198, hitRate: '71%', roi: '+15.6%', profit: '+30.9', streak: 'W5' },
+  { rank: 5, name: 'SpartaFan', initials: 'SF', tips: 167, hitRate: '64%', roi: '+14.2%', profit: '+23.7', streak: 'W2' },
+  { rank: 6, name: 'IceKingHockey', initials: 'IK', tips: 234, hitRate: '60%', roi: '+12.8%', profit: '+30.0', streak: 'L2' },
+  { rank: 7, name: 'TennisAce', initials: 'TA', tips: 145, hitRate: '67%', roi: '+11.5%', profit: '+16.7', streak: 'W4' },
+  { rank: 8, name: 'NBAInsider', initials: 'NI', tips: 178, hitRate: '59%', roi: '+10.3%', profit: '+18.3', streak: 'W1' },
+  { rank: 9, name: 'EsportGuru', initials: 'EG', tips: 123, hitRate: '63%', roi: '+9.7%', profit: '+11.9', streak: 'L1' },
+  { rank: 10, name: 'SafeBettor', initials: 'SB', tips: 312, hitRate: '58%', roi: '+8.4%', profit: '+26.2', streak: 'W2' },
+];
+
+export const MOCK_LEAGUE_STATS: LeagueStat[] = [
+  { name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League', sport: 'football', league: 'Premier League', stats: { 'Průměr gólů': '2.85', 'Over 2.5': '58%', 'BTTS': '52%', 'Domácí výhry': '44%', 'Remízy': '24%', 'Venkovní výhry': '32%' } },
+  { name: '🇪🇸 La Liga', sport: 'football', league: 'La Liga', stats: { 'Průměr gólů': '2.62', 'Over 2.5': '53%', 'BTTS': '48%', 'Domácí výhry': '47%', 'Remízy': '25%', 'Venkovní výhry': '28%' } },
+  { name: '🇩🇪 Bundesliga', sport: 'football', league: 'Bundesliga', stats: { 'Průměr gólů': '3.12', 'Over 2.5': '63%', 'BTTS': '57%', 'Domácí výhry': '43%', 'Remízy': '22%', 'Venkovní výhry': '35%' } },
+  { name: '🇮🇹 Serie A', sport: 'football', league: 'Serie A', stats: { 'Průměr gólů': '2.71', 'Over 2.5': '55%', 'BTTS': '50%', 'Domácí výhry': '46%', 'Remízy': '26%', 'Venkovní výhry': '28%' } },
+  { name: '🇫🇷 Ligue 1', sport: 'football', league: 'Ligue 1', stats: { 'Průměr gólů': '2.68', 'Over 2.5': '52%', 'BTTS': '46%', 'Domácí výhry': '45%', 'Remízy': '24%', 'Venkovní výhry': '31%' } },
+  { name: '🇨🇿 Chance Liga', sport: 'football', league: 'Chance Liga', stats: { 'Průměr gólů': '2.54', 'Over 2.5': '49%', 'BTTS': '44%', 'Domácí výhry': '48%', 'Remízy': '23%', 'Venkovní výhry': '29%' } },
+];
+
+export const MOCK_SIGNALS: Signal[] = [
+  { id: '1', sport: 'football', league: 'Chance Liga', matchHome: 'Sparta', matchAway: 'Slavia', market: 'Over 2.5 gólů', odds: 1.82, confidence: 7.8, unitSize: 2, status: 'pending', createdAt: new Date().toISOString() },
+  { id: '2', sport: 'football', league: 'Premier League', matchHome: 'Arsenal', matchAway: 'Chelsea', market: 'Over 2.5', odds: 1.95, confidence: 8.1, unitSize: 2, status: 'win', createdAt: new Date(Date.now() - 86400000).toISOString() },
+  { id: '3', sport: 'football', league: 'Bundesliga', matchHome: 'Bayern', matchAway: 'Dortmund', market: 'BTTS Ano', odds: 1.80, confidence: 7.4, unitSize: 1.5, status: 'win', createdAt: new Date(Date.now() - 172800000).toISOString() },
+  { id: '4', sport: 'hockey', league: 'NHL', matchHome: 'Colorado', matchAway: 'Tampa Bay', market: 'Over 5.5', odds: 1.90, confidence: 7.9, unitSize: 2, status: 'loss', createdAt: new Date(Date.now() - 259200000).toISOString() },
+  { id: '5', sport: 'tennis', league: 'ATP Wimbledon', matchHome: 'Djokovic', matchAway: 'Alcaraz', market: 'Over 22.5 gamů', odds: 1.78, confidence: 8.5, unitSize: 2, status: 'win', createdAt: new Date(Date.now() - 345600000).toISOString() },
+  { id: '6', sport: 'basketball', league: 'NBA', matchHome: 'Lakers', matchAway: 'Celtics', market: 'Under 215.5', odds: 1.88, confidence: 6.8, unitSize: 1, status: 'pending', createdAt: new Date(Date.now() - 432000000).toISOString() },
+  { id: '7', sport: 'esports', league: 'CS2 Major', matchHome: 'NAVI', matchAway: 'FaZe', market: 'NAVI ML', odds: 2.10, confidence: 7.2, unitSize: 1.5, status: 'win', createdAt: new Date(Date.now() - 518400000).toISOString() },
+  { id: '8', sport: 'football', league: 'La Liga', matchHome: 'Real Madrid', matchAway: 'Barcelona', market: '1X', odds: 1.45, confidence: 7.0, unitSize: 1, status: 'loss', createdAt: new Date(Date.now() - 604800000).toISOString() },
+];
+
+export const MOCK_FORUM_CATEGORIES: ForumCategory[] = [
+  { id: '1', name: 'Dnešní zápasy', description: 'Diskuze o dnešních zápasech, tipy a analýzy od komunity', icon: 'fire', threadCount: 342, latestTitle: 'Arsenal vs Chelsea — preview', latestAuthor: 'MarekT', latestTime: 'před 12 min' },
+  { id: '2', name: 'Fotbal', description: 'Premier League, La Liga, Bundesliga, Serie A, české ligy', icon: 'futbol', threadCount: 1247, latestTitle: 'PL sezóna 26/27 — predikce', latestAuthor: 'DavidK', latestTime: 'před 1 hod' },
+  { id: '3', name: 'Hokej', description: 'NHL, Extraliga, KHL, SHL', icon: 'hockey-puck', threadCount: 589, latestTitle: 'NHL offseason moves — dopad na odds', latestAuthor: 'PetrV', latestTime: 'před 3 hod' },
+  { id: '4', name: 'Basketbal & Tenis', description: 'NBA, EuroLeague, ATP, WTA, Grand Slamy', icon: 'basketball-ball', threadCount: 412, latestTitle: 'Wimbledon 2026 — value bety', latestAuthor: 'JakubH', latestTime: 'před 5 hod' },
+  { id: '5', name: 'Esporty', description: 'CS2, LoL, Dota 2, Valorant', icon: 'gamepad', threadCount: 278, latestTitle: 'CS2 Major Copenhagen — skupiny', latestAuthor: 'LukasN', latestTime: 'před 8 hod' },
+  { id: '6', name: 'Strategie & Bankroll', description: 'Value betting, Kelly criterion, bankroll management, psychologie', icon: 'chart-line', threadCount: 156, latestTitle: 'Flat vs Kelly — co funguje lépe?', latestAuthor: 'MartinP', latestTime: 'před 1 den' },
+];
+
+export const SPORTS_DATA = [
+  {
+    id: 'football' as const,
+    label: 'Fotbal',
+    emoji: '⚽',
+    leagues: '120+ lig',
+    signals: '2 100+ signálů',
+    title: 'Analytické sázení na',
+    titleAccent: 'fotbal',
+    titleSuffix: 's daty z 120+ lig',
+    description: 'Pokrýváme Premier League, La Ligu, Bundesligu, Serie A, Ligue 1, Champions League, české a slovenské ligy i exotické soutěže. Každý signál je podložen statistikami, formou a pohybem kurzů.',
+    features: [
+      { icon: 'signal', title: '2–5 signálů denně', description: 'Průměrně 2–5 fotbalových tipů denně s confidence skóre a doporučeným unit size.' },
+      { icon: 'chart-pie', title: '94 % přesnost', description: 'Historická přesnost fotbalových signálů ověřená ve veřejné evidenci.' },
+      { icon: 'globe', title: '120+ lig', description: 'Od Premier League po českou 2. ligu. Pokrýváme vše, kde jsou data.' },
+    ],
+    logos: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🇪🇸', '🇩🇪', '🇮🇹', '🇫🇷', '🇨🇿', '⚽'],
+  },
+  {
+    id: 'hockey' as const,
+    label: 'Hokej',
+    emoji: '🏒',
+    leagues: '15+ lig',
+    signals: '890+ signálů',
+    title: 'Hokejové analýzy s důrazem na',
+    titleAccent: 'NHL a Extraligu',
+    titleSuffix: '',
+    description: 'Specializujeme se na NHL, KHL, SHL, Extraligu a Champions Hockey League. Sledujeme brankářské rotace, power play efektivitu a pohyb pucklajnů.',
+    logos: ['🏒', '🇺🇸', '🇨🇦', '🇸🇪', '🇫🇮', '🇨🇿', '🥅'],
+  },
+  {
+    id: 'basketball' as const,
+    label: 'Basketbal',
+    emoji: '🏀',
+    leagues: '10+ lig',
+    signals: '540+ signálů',
+    title: 'Basketbalové sázení na',
+    titleAccent: 'NBA, EuroLeague',
+    titleSuffix: 'a další',
+    description: 'NBA, EuroLeague, FIBA, NBL, NCAA. Sledujeme pace, efektivitu, injury reporty a line movement.',
+    logos: ['🏀', '🇺🇸', '🇪🇺', '🇪🇸', '🇹🇷', '🇨🇿', '⛹️'],
+  },
+  {
+    id: 'tennis' as const,
+    label: 'Tenis',
+    emoji: '🎾',
+    leagues: 'ATP + WTA',
+    signals: '650+ signálů',
+    title: 'Tenisové analýzy založené na',
+    titleAccent: 'surface datech',
+    titleSuffix: '',
+    description: 'ATP, WTA, Grand Slamy, Challenger Tour. Analyzujeme povrchy, H2H, servisní statistiky a formu hráčů.',
+    logos: ['🎾', '🏆', '🇦🇺', '🇫🇷', '🇬🇧', '🇺🇸', '🥎'],
+  },
+  {
+    id: 'baseball' as const,
+    label: 'Baseball',
+    emoji: '⚾',
+    leagues: 'MLB + NPB',
+    signals: '320+ signálů',
+    title: 'Baseball sázení na',
+    titleAccent: 'MLB',
+    titleSuffix: 's pokročilými metrikami',
+    description: 'Moneyline, run line, totals. Sledujeme starting pitchery, bullpen statistiky, park factors a weather data.',
+    logos: ['⚾', '🇺🇸', '🇯🇵', '🇰🇷', '🏟️', '🧢', '⚾'],
+  },
+  {
+    id: 'amfootball' as const,
+    label: 'Am. fotbal',
+    emoji: '🏈',
+    leagues: 'NFL + NCAA',
+    signals: '280+ signálů',
+    title: 'Americký fotbal —',
+    titleAccent: 'NFL a NCAA',
+    titleSuffix: 'analýzy',
+    description: 'Spread, moneyline, totals, props. Sledujeme DVOA, EPA, injury reporty a weather conditions.',
+    logos: ['🏈', '🇺🇸', '🏟️', '🎓', '🏆', '🦅', '🏈'],
+  },
+  {
+    id: 'esports' as const,
+    label: 'Esporty',
+    emoji: '🎮',
+    leagues: 'CS2, LoL, Dota 2, Valorant',
+    signals: '410+ signálů',
+    title: 'Esportové sázení na',
+    titleAccent: 'CS2, LoL, Dota 2',
+    titleSuffix: '',
+    description: 'Pokrýváme Major turnaje, tier 1 ligy a vybrané tier 2 soutěže. Map pool analýzy, roster changes, meta shifty.',
+    logos: ['🎮', '⌨️', '🖱️', '🏆', '🎯', '🕹️', '🎮'],
+  },
+];

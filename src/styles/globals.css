@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green: #39FF14;
+  --green-dark: #2bcc10;
+  --green-muted: #1a8a0a;
+  --green-glow: rgba(57, 255, 20, 0.12);
+  --green-glow-strong: rgba(57, 255, 20, 0.25);
+  --black: #0a0a0a;
+  --dark: #111111;
+  --dark-card: #161616;
+  --dark-card-hover: #1c1c1c;
+  --gray-900: #1a1a1a;
+  --gray-800: #222222;
+  --gray-700: #2a2a2a;
+  --gray-600: #333333;
+  --gray-500: #555555;
+  --gray-400: #888888;
+  --gray-300: #aaaaaa;
+  --gray-200: #cccccc;
+  --white: #ffffff;
+  --off-white: #f7f7f7;
+  --red: #ff4444;
+  --yellow: #ffaa00;
+  --blue: #4488ff;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-sm: 8px;
+  --transition: all 0.3s ease;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-montserrat), 'Montserrat', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2.5 px-9 py-4 bg-green text-black font-montserrat text-sm font-bold uppercase tracking-wider border-none rounded cursor-pointer transition-all duration-300 no-underline;
+  }
+
+  .btn-primary:hover {
+    @apply bg-green-dark -translate-y-0.5;
+    box-shadow: 0 8px 30px var(--green-glow-strong);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2.5 px-7 py-3.5 bg-transparent text-white font-montserrat text-[0.82rem] font-semibold uppercase tracking-wider border-2 border-gray-600 rounded cursor-pointer transition-all duration-300 no-underline;
+  }
+
+  .btn-outline:hover {
+    @apply border-green text-green;
+  }
+
+  .btn-login {
+    @apply px-5 py-2.5 bg-transparent text-white border border-gray-600 rounded-sm font-montserrat text-[0.78rem] font-semibold cursor-pointer transition-all duration-300 no-underline;
+  }
+
+  .btn-login:hover {
+    @apply border-white;
+  }
+
+  .btn-register {
+    @apply px-5 py-2.5 bg-green text-black border-none rounded-sm font-montserrat text-[0.78rem] font-bold cursor-pointer transition-all duration-300 no-underline;
+  }
+
+  .btn-register:hover {
+    @apply bg-green-dark;
+    box-shadow: 0 4px 20px var(--green-glow-strong);
+  }
+
+  .section-label {
+    @apply inline-flex items-center gap-2 px-4 py-1.5 border border-green rounded-full text-[0.7rem] font-semibold tracking-[2px] uppercase mb-4 text-white;
+  }
+
+  .section-label::before {
+    content: '';
+    @apply w-2 h-2 bg-green rounded-full;
+  }
+
+  .section-title {
+    @apply text-[clamp(1.8rem,4vw,2.8rem)] font-extrabold leading-tight uppercase mb-3;
+  }
+
+  .section-title .accent {
+    @apply text-green;
+  }
+
+  .section-desc {
+    @apply text-gray-400 text-[0.95rem] max-w-[600px] leading-relaxed;
+  }
+
+  .page-section {
+    @apply py-20;
+  }
+
+  .page-section + .page-section {
+    @apply border-t border-gray-800;
+  }
+
+  .dark-card {
+    @apply bg-dark-card border border-gray-700 rounded transition-all duration-300;
+  }
+
+  .dark-card:hover {
+    @apply border-green;
+  }
+
+  .scanner-filter {
+    @apply px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-sm text-gray-300 font-montserrat text-[0.78rem] font-semibold cursor-pointer transition-all duration-300;
+  }
+
+  .scanner-filter.active,
+  .scanner-filter:hover {
+    @apply bg-green text-black border-green;
+  }
+
+  .ev-badge {
+    @apply inline-flex px-2.5 py-1 rounded-full text-[0.75rem] font-bold;
+  }
+
+  .ev-high {
+    background: rgba(57, 255, 20, 0.15);
+    color: var(--green);
+  }
+
+  .ev-medium {
+    background: rgba(255, 170, 0, 0.15);
+    color: var(--yellow);
+  }
+
+  .ev-low {
+    background: rgba(68, 136, 255, 0.15);
+    color: var(--blue);
+  }
+
+  .rank-1 {
+    background: #ffd700;
+    color: var(--black);
+  }
+
+  .rank-2 {
+    background: #c0c0c0;
+    color: var(--black);
+  }
+
+  .rank-3 {
+    background: #cd7f32;
+    color: var(--black);
+  }
+
+  .rank-other {
+    @apply bg-gray-800 text-gray-300;
+  }
+
+  .positive {
+    color: var(--green);
+  }
+
+  .negative {
+    color: var(--red);
+  }
+}
