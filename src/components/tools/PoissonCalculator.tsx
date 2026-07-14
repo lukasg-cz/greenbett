@@ -1,81 +1,74 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { SectionLabel } from '@/components/ui/SectionLabel';
 import {
+  POISSON_DEFAULTS,
   calculatePoisson,
+  formatDecimalInput,
   formatPercent,
-  getScoreMatrix,
+  heatColor,
+  parseDecimalInput,
   validatePoissonInput,
   type PoissonResult,
 } from '@/lib/calculations/poisson';
 
-const DEFAULTS = {
-  lambdaHome: 1.5,
-  lambdaAway: 1.3,
-  maxGoals: 5,
-};
-
 const inputClass =
-  'w-full px-4 py-3.5 bg-gray-800 border border-gray-700 rounded-sm text-white font-montserrat text-[0.9rem] font-semibold focus:outline-none focus:border-green transition-all';
+  'w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3.5 py-3 text-white text-base outline-none transition-colors focus:border-green';
 
-function OutcomeBox({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+function ResultBox({
+  label,
+  value,
+  active,
+}: {
+  label: string;
+  value: string;
+  active?: boolean;
+}) {
   return (
     <div
-      className={`rounded-lg p-4 text-center border ${
-        highlight ? 'border-green bg-green/10' : 'border-gray-700 bg-gray-900/40'
+      className={`text-center py-4 px-2 rounded-[10px] border ${
+        active ? 'border-green bg-green/[0.08]' : 'border-[#333] bg-[#1a1a1a]'
       }`}
     >
-      <div className="text-[0.68rem] font-bold uppercase tracking-wider text-gray-400 mb-2">{label}</div>
-      <div className={`text-2xl font-extrabold ${highlight ? 'text-green' : 'text-white'}`}>
-        {formatPercent(value)}
-      </div>
+      <div className="text-[10px] uppercase text-[#888] mb-1.5 tracking-wider">{label}</div>
+      <div className={`text-2xl font-extrabold ${active ? 'text-green' : 'text-white'}`}>{value}</div>
     </div>
   );
 }
 
-function ScoreHeatmap({ result, maxGoals }: { result: PoissonResult; maxGoals: number }) {
-  const matrix = getScoreMatrix(result.scores, maxGoals);
-  const maxProb = Math.max(...matrix.flat(), 0.0001);
+function ScoreMatrix({ result }: { result: PoissonResult }) {
+  const { matrix, displayMaxGoals, maxProb } = result;
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-separate border-spacing-1">
         <thead>
           <tr>
-            <th className="w-10" />
-            {Array.from({ length: maxGoals + 1 }, (_, a) => (
-              <th key={a} className="text-center text-[0.65rem] font-bold text-gray-500 pb-1">
+            <th />
+            {Array.from({ length: displayMaxGoals + 1 }, (_, a) => (
+              <th key={a} className="text-[13px] text-[#888] p-1.5 text-center font-semibold">
                 {a}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: maxGoals + 1 }, (_, h) => (
+          {Array.from({ length: displayMaxGoals + 1 }, (_, h) => (
             <tr key={h}>
-              <td className="text-right pr-2 text-[0.65rem] font-bold text-gray-500">{h}</td>
-              {Array.from({ length: maxGoals + 1 }, (_, a) => {
+              <td className="text-[13px] text-[#888] p-1.5 text-center font-semibold w-[30px]">{h}</td>
+              {Array.from({ length: displayMaxGoals + 1 }, (_, a) => {
                 const prob = matrix[h][a];
-                const intensity = prob / maxProb;
-                const isMode =
-                  result.mostLikelyScore.homeGoals === h &&
-                  result.mostLikelyScore.awayGoals === a;
                 return (
                   <td key={a} className="p-0">
                     <div
-                      className={`rounded p-2 text-center border h-full ${
-                        isMode ? 'border-green ring-1 ring-green/50' : 'border-gray-800'
-                      }`}
-                      style={{ backgroundColor: `rgba(57, 255, 20, ${0.08 + intensity * 0.45})` }}
+                      className="text-center py-2.5 px-1.5 rounded-md min-w-[70px] transition-transform hover:scale-105"
+                      style={{ backgroundColor: heatColor(prob, maxProb) }}
                     >
-                      <div className="text-[0.7rem] font-bold text-white">
+                      <div className="text-sm font-bold text-white">
                         {h}:{a}
                       </div>
-                      <div className={`text-[0.65rem] ${isMode ? 'text-green font-bold' : 'text-gray-400'}`}>
-                        {formatPercent(prob, 1)}
-                      </div>
+                      <div className="text-[11px] text-white/70 mt-0.5">{formatPercent(prob)}</div>
                     </div>
                   </td>
                 );
@@ -84,297 +77,393 @@ function ScoreHeatmap({ result, maxGoals }: { result: PoissonResult; maxGoals: n
           ))}
         </tbody>
       </table>
-      <p className="text-[0.72rem] text-gray-500 mt-3">
-        Osa Y = góly domácích · Osa X = góly hostů
-      </p>
+      <p className="text-xs text-[#666] mt-2.5">Osa Y = góly domácích · Osa X = góly hostů</p>
     </div>
   );
 }
 
 export function PoissonCalculator() {
-  const [lambdaHome, setLambdaHome] = useState(DEFAULTS.lambdaHome);
-  const [lambdaAway, setLambdaAway] = useState(DEFAULTS.lambdaAway);
-  const [maxGoals, setMaxGoals] = useState(DEFAULTS.maxGoals);
+  const [lambdaHomeInput, setLambdaHomeInput] = useState(formatDecimalInput(POISSON_DEFAULTS.lambdaHome));
+  const [lambdaAwayInput, setLambdaAwayInput] = useState(formatDecimalInput(POISSON_DEFAULTS.lambdaAway));
+  const [maxGoals, setMaxGoals] = useState(POISSON_DEFAULTS.maxGoals);
+  const [result, setResult] = useState<PoissonResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [guideOpen, setGuideOpen] = useState(false);
 
-  const validationError = useMemo(
-    () => validatePoissonInput({ lambdaHome, lambdaAway, maxGoals }),
-    [lambdaHome, lambdaAway, maxGoals]
-  );
+  const runCalculate = useCallback(() => {
+    const lambdaHome = parseDecimalInput(lambdaHomeInput);
+    const lambdaAway = parseDecimalInput(lambdaAwayInput);
+    const validationError = validatePoissonInput({ lambdaHome, lambdaAway, maxGoals });
 
-  const result = useMemo(() => {
-    if (validationError) return null;
-    return calculatePoisson({ lambdaHome, lambdaAway, maxGoals });
-  }, [lambdaHome, lambdaAway, maxGoals, validationError]);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
 
-  const highLambdaWarning = lambdaHome > 4 || lambdaAway > 4;
+    setError(null);
+    setResult(calculatePoisson({ lambdaHome, lambdaAway, maxGoals }));
+  }, [lambdaHomeInput, lambdaAwayInput, maxGoals]);
 
   const handleReset = () => {
-    setLambdaHome(DEFAULTS.lambdaHome);
-    setLambdaAway(DEFAULTS.lambdaAway);
-    setMaxGoals(DEFAULTS.maxGoals);
+    setLambdaHomeInput(formatDecimalInput(POISSON_DEFAULTS.lambdaHome));
+    setLambdaAwayInput(formatDecimalInput(POISSON_DEFAULTS.lambdaAway));
+    setMaxGoals(POISSON_DEFAULTS.maxGoals);
+    setResult(null);
+    setError(null);
   };
 
-  const bttsFavored = result
-    ? result.btts.bothScoreYes >= result.btts.bothScoreNo
-      ? 'yes'
-      : 'no'
-    : 'yes';
+  useEffect(() => {
+    setResult(
+      calculatePoisson({
+        lambdaHome: POISSON_DEFAULTS.lambdaHome,
+        lambdaAway: POISSON_DEFAULTS.lambdaAway,
+        maxGoals: POISSON_DEFAULTS.maxGoals,
+      })
+    );
+  }, []);
 
   const outcomeHighlight = result
-    ? (['homeWin', 'draw', 'awayWin'] as const).reduce((best, key) =>
-        result.outcomes[key] > result.outcomes[best] ? key : best
-      , 'homeWin' as 'homeWin' | 'draw' | 'awayWin')
-    : 'homeWin';
+    ? (['homeWin', 'draw', 'awayWin'] as const).reduce(
+        (best, key) => (result.outcomes[key] > result.outcomes[best] ? key : best),
+        'homeWin' as 'homeWin' | 'draw' | 'awayWin'
+      )
+    : null;
+
+  const bttsFavoredYes = result ? result.btts.bothScoreYes >= result.btts.bothScoreNo : true;
+  const dash = '—';
 
   return (
     <section className="page-section">
-      <div className="max-w-[1280px] mx-auto px-6">
-        <SectionLabel>Nástroj</SectionLabel>
-        <h2 className="section-title">
-          POISSON FOOTBALL <span className="accent">CALCULATOR</span>
-        </h2>
-        <p className="section-desc mb-10 max-w-[720px]">
-          Poissonův model odhaduje pravděpodobnosti přesných skóre, výsledku 1X2, over/under a BTTS
-          na základě očekávaných gólů domácích a hostů (λ).
+      <div className="max-w-[1100px] mx-auto px-6">
+        <div className="inline-flex items-center gap-1.5 bg-green/15 border border-green/40 rounded-full px-3.5 py-1 text-xs text-green uppercase tracking-wider mb-3 before:content-[''] before:w-2 before:h-2 before:bg-green before:rounded-full">
+          Nástroj
+        </div>
+        <h1 className="text-[clamp(1.4rem,4vw,2rem)] font-black uppercase mb-2">
+          Poisson Football <span className="text-green">Calculator</span>
+        </h1>
+        <p className="text-[#888] text-sm mb-8 leading-relaxed max-w-[720px]">
+          Poissonův model odhaduje pravděpodobnosti přesných skóre, výsledku 1X2, over/under a BTTS na
+          základě očekávaných gólů domácích a hostů (λ).
         </p>
 
-        <div className="lg:grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-8 mb-8">
-          <div className="bg-dark-card border border-gray-700 rounded-lg p-6 md:p-8">
-            <h3 className="text-white font-bold text-[1rem] mb-6 uppercase tracking-wider">Vstupy</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+          <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
+            <h2 className="text-base font-extrabold uppercase tracking-wide mb-5">Vstupy</h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
               <div>
-                <label className="block text-[0.78rem] font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                <label className="block text-[11px] uppercase text-[#888] mb-1.5 tracking-wide">
                   Očekávané góly domácích (λ)
                 </label>
                 <input
-                  type="number"
-                  min={0}
-                  step={0.1}
-                  value={lambdaHome}
-                  onChange={(e) => setLambdaHome(parseFloat(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={lambdaHomeInput}
+                  onChange={(e) => setLambdaHomeInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && runCalculate()}
                   className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-[0.78rem] font-semibold uppercase tracking-wider text-gray-300 mb-2">
+                <label className="block text-[11px] uppercase text-[#888] mb-1.5 tracking-wide">
                   Očekávané góly hostů (λ)
                 </label>
                 <input
-                  type="number"
-                  min={0}
-                  step={0.1}
-                  value={lambdaAway}
-                  onChange={(e) => setLambdaAway(parseFloat(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={lambdaAwayInput}
+                  onChange={(e) => setLambdaAwayInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && runCalculate()}
                   className={inputClass}
                 />
               </div>
             </div>
 
-            <div className="mb-6">
-              <label className="block text-[0.78rem] font-semibold uppercase tracking-wider text-gray-300 mb-2">
+            <div className="mb-5">
+              <label className="block text-[11px] uppercase text-[#888] mb-2.5 tracking-wide">
                 Max gólů v matici ({maxGoals})
               </label>
               <input
                 type="range"
                 min={3}
                 max={8}
-                step={1}
                 value={maxGoals}
                 onChange={(e) => setMaxGoals(parseInt(e.target.value, 10))}
-                className="w-full accent-green"
+                className="w-full h-1.5 rounded bg-[#333] appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-green [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-green [&::-moz-range-thumb]:border-0"
               />
-              <div className="flex justify-between text-[0.7rem] text-gray-500 mt-1">
-                <span>3</span>
-                <span>8</span>
-              </div>
             </div>
 
-            {validationError && (
-              <p className="text-red text-[0.85rem] mb-4">{validationError}</p>
-            )}
-            {highLambdaWarning && !validationError && (
-              <p className="text-yellow text-[0.85rem] mb-4">
-                λ &gt; 4 — model je méně realistický pro extrémně ofenzivní zápasy. Výsledky ber s rezervou.
-              </p>
-            )}
+            {error && <p className="text-red text-sm mb-4">{error}</p>}
 
             <div className="flex gap-3 flex-wrap">
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={() => document.getElementById('poisson-results')?.scrollIntoView({ behavior: 'smooth' })}
-              >
+              <button type="button" onClick={runCalculate} className="btn-primary text-sm py-2.5 px-7">
                 Spočítat
               </button>
-              <button type="button" className="btn-outline" onClick={handleReset}>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex items-center px-7 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wide bg-[#2a2a2a] text-[#e0e0e0] border border-[#444] hover:opacity-85 transition-opacity"
+              >
                 Reset
               </button>
             </div>
           </div>
 
-          <div className="bg-dark-card border border-gray-700 rounded-lg p-6 md:p-8">
-            <h3 className="text-white font-bold text-[1rem] mb-6 uppercase tracking-wider">Shrnutí</h3>
+          <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
+            <h2 className="text-base font-extrabold uppercase tracking-wide mb-5">Shrnutí</h2>
 
-            {result ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-3">
-                  <OutcomeBox
-                    label="Home win"
-                    value={result.outcomes.homeWin}
-                    highlight={outcomeHighlight === 'homeWin'}
-                  />
-                  <OutcomeBox
-                    label="Draw"
-                    value={result.outcomes.draw}
-                    highlight={outcomeHighlight === 'draw'}
-                  />
-                  <OutcomeBox
-                    label="Away win"
-                    value={result.outcomes.awayWin}
-                    highlight={outcomeHighlight === 'awayWin'}
-                  />
-                </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <ResultBox
+                label="Home Win"
+                value={result ? formatPercent(result.outcomes.homeWin) : dash}
+                active={outcomeHighlight === 'homeWin'}
+              />
+              <ResultBox
+                label="Draw"
+                value={result ? formatPercent(result.outcomes.draw) : dash}
+                active={outcomeHighlight === 'draw'}
+              />
+              <ResultBox
+                label="Away Win"
+                value={result ? formatPercent(result.outcomes.awayWin) : dash}
+                active={outcomeHighlight === 'awayWin'}
+              />
+            </div>
 
-                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                  <div className="text-[0.68rem] font-bold uppercase tracking-wider text-gray-400 mb-1">
-                    Nejpravděpodobnější skóre
-                  </div>
-                  <div className="text-xl font-extrabold text-green">
-                    {result.mostLikelyScore.homeGoals}:{result.mostLikelyScore.awayGoals}{' '}
-                    <span className="text-white text-base font-semibold">
+            <div className="bg-[#1a1a1a] border border-[#333] rounded-[10px] px-4 py-3.5 mb-4">
+              <div className="text-[10px] uppercase text-[#888] tracking-wider mb-1">
+                Nejpravděpodobnější skóre
+              </div>
+              <div className="text-base font-bold">
+                {result ? (
+                  <>
+                    <span className="text-white">
+                      {result.mostLikelyScore.homeGoals}:{result.mostLikelyScore.awayGoals}
+                    </span>{' '}
+                    <span className="text-[#ccc]">
                       ({formatPercent(result.mostLikelyScore.probability)})
                     </span>
-                  </div>
-                </div>
+                  </>
+                ) : (
+                  dash
+                )}
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div
-                    className={`rounded-lg p-4 border text-center ${
-                      bttsFavored === 'yes' ? 'border-green bg-green/10' : 'border-gray-700'
-                    }`}
-                  >
-                    <div className="text-[0.68rem] font-bold uppercase text-gray-400 mb-1">BTTS ano</div>
-                    <div className="text-lg font-extrabold text-white">
-                      {formatPercent(result.btts.bothScoreYes)}
-                    </div>
-                  </div>
-                  <div
-                    className={`rounded-lg p-4 border text-center ${
-                      bttsFavored === 'no' ? 'border-green bg-green/10' : 'border-gray-700'
-                    }`}
-                  >
-                    <div className="text-[0.68rem] font-bold uppercase text-gray-400 mb-1">BTTS ne</div>
-                    <div className="text-lg font-extrabold text-white">
-                      {formatPercent(result.btts.bothScoreNo)}
-                    </div>
-                  </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div
+                className={`text-center py-3.5 px-2 rounded-[10px] border ${
+                  result && bttsFavoredYes ? 'border-green bg-green/[0.08]' : 'border-[#333] bg-[#1a1a1a]'
+                }`}
+              >
+                <div className="text-[10px] uppercase text-[#888] mb-1 tracking-wider">BTTS Ano</div>
+                <div className={`text-[22px] font-extrabold ${result && bttsFavoredYes ? 'text-green' : 'text-white'}`}>
+                  {result ? formatPercent(result.btts.bothScoreYes) : dash}
                 </div>
               </div>
-            ) : (
-              <p className="text-gray-500 text-[0.9rem]">Oprav vstupy pro zobrazení výsledků.</p>
-            )}
+              <div
+                className={`text-center py-3.5 px-2 rounded-[10px] border ${
+                  result && !bttsFavoredYes ? 'border-green bg-green/[0.08]' : 'border-[#333] bg-[#1a1a1a]'
+                }`}
+              >
+                <div className="text-[10px] uppercase text-[#888] mb-1 tracking-wider">BTTS Ne</div>
+                <div className={`text-[22px] font-extrabold ${result && !bttsFavoredYes ? 'text-green' : 'text-white'}`}>
+                  {result ? formatPercent(result.btts.bothScoreNo) : dash}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {result && (
-          <div id="poisson-results">
-            <div className="bg-dark-card border border-gray-700 rounded-lg p-6 md:p-8 mb-8">
-              <h3 className="text-white font-bold text-[1rem] mb-6 uppercase tracking-wider">
+          <>
+            <div className="bg-[#141414] border border-[#222] rounded-xl p-6 mb-5">
+              <h2 className="text-base font-extrabold uppercase tracking-wide mb-5">
                 Pravděpodobnost přesného skóre
-              </h3>
-              <ScoreHeatmap result={result} maxGoals={maxGoals} />
+              </h2>
+              <ScoreMatrix result={result} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8">
-              <div className="bg-dark-card border border-gray-700 rounded-lg p-6 md:p-8">
-                <h3 className="text-white font-bold text-[1rem] mb-6 uppercase tracking-wider">
-                  Over / under pravděpodobnosti
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-separate border-spacing-y-1">
-                    <thead>
-                      <tr>
-                        {['Line', 'Over', 'Under'].map((col) => (
-                          <th
-                            key={col}
-                            className="text-left px-3 py-2 text-[0.68rem] font-bold uppercase tracking-wider text-gray-400"
-                          >
-                            {col}
-                          </th>
-                        ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+              <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
+                <h2 className="text-base font-extrabold uppercase tracking-wide mb-5">
+                  Over / Under pravděpodobnosti
+                </h2>
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      {['Line', 'Over', 'Under'].map((col) => (
+                        <th
+                          key={col}
+                          className="text-left text-[11px] uppercase text-[#888] px-3 py-2 border-b border-[#2a2a2a] tracking-wide"
+                        >
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.overUnder.map((row) => (
+                      <tr key={row.line}>
+                        <td className="px-3 py-2.5 border-b border-[#1a1a1a] text-[15px]">
+                          {row.line.toFixed(1)}
+                        </td>
+                        <td className="px-3 py-2.5 border-b border-[#1a1a1a] text-[15px] text-green font-bold">
+                          {formatPercent(row.over)}
+                        </td>
+                        <td className="px-3 py-2.5 border-b border-[#1a1a1a] text-[15px] text-[#e0e0e0]">
+                          {formatPercent(row.under)}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {result.overUnder.map((row) => {
-                        const highlight = row.over > 0.6 || row.under > 0.6;
-                        const overFavored = row.over >= row.under;
-                        return (
-                          <tr
-                            key={row.line}
-                            className={`${highlight ? 'bg-green/5' : 'bg-gray-900/30'} rounded`}
-                          >
-                            <td className="px-3 py-3 font-semibold text-white">{row.line}</td>
-                            <td
-                              className={`px-3 py-3 font-bold ${
-                                highlight && overFavored ? 'text-green' : 'text-white'
-                              }`}
-                            >
-                              {formatPercent(row.over)}
-                            </td>
-                            <td
-                              className={`px-3 py-3 font-bold ${
-                                highlight && !overFavored ? 'text-green' : 'text-gray-300'
-                              }`}
-                            >
-                              {formatPercent(row.under)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <div className="bg-dark-card border border-gray-700 rounded-lg p-6 md:p-8">
-                <h3 className="text-white font-bold text-[1rem] mb-6 uppercase tracking-wider">
-                  BTTS detail
-                </h3>
-                <div className="space-y-5">
-                  {[
-                    { label: 'Oba týmy skórují — ANO', value: result.btts.bothScoreYes, favored: bttsFavored === 'yes' },
-                    { label: 'Oba týmy skórují — NE', value: result.btts.bothScoreNo, favored: bttsFavored === 'no' },
-                  ].map((item) => (
-                    <div key={item.label}>
-                      <div className="flex justify-between text-[0.82rem] mb-2">
-                        <span className={item.favored ? 'text-green font-semibold' : 'text-gray-300'}>
-                          {item.label}
-                        </span>
-                        <span className="font-bold text-white">{formatPercent(item.value)}</span>
-                      </div>
-                      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${
-                            item.favored ? 'bg-green' : 'bg-gray-600'
-                          }`}
-                          style={{ width: `${item.value * 100}%` }}
-                        />
-                      </div>
+              <div className="bg-[#141414] border border-[#222] rounded-xl p-6">
+                <h2 className="text-base font-extrabold uppercase tracking-wide mb-5">BTTS Detail</h2>
+
+                {[
+                  {
+                    label: 'Oba týmy skórují — ANO',
+                    value: result.btts.bothScoreYes,
+                    favored: bttsFavoredYes,
+                    barClass: 'bg-green',
+                  },
+                  {
+                    label: 'Oba týmy skórují — NE',
+                    value: result.btts.bothScoreNo,
+                    favored: !bttsFavoredYes,
+                    barClass: 'bg-[#555]',
+                  },
+                ].map((item) => (
+                  <div key={item.label} className="mb-4 last:mb-0">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className={`text-[13px] font-semibold ${item.favored ? 'text-green' : 'text-[#e0e0e0]'}`}>
+                        {item.label}
+                      </span>
+                      <span className="text-sm font-bold">{formatPercent(item.value)}</span>
                     </div>
-                  ))}
-                </div>
-                <p className="text-[0.75rem] text-gray-500 mt-6 leading-relaxed">
+                    <div className="w-full h-1.5 bg-[#2a2a2a] rounded overflow-hidden">
+                      <div
+                        className={`h-full rounded transition-all duration-400 ${item.barClass}`}
+                        style={{ width: `${item.value * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <p className="text-xs text-[#666] mt-4 leading-relaxed">
                   Model předpokládá nezávislost gólů obou týmů. Pro pokročilé modelování viz{' '}
-                  <Link href="/skola/modely-pravdepodobnosti" className="text-green hover:underline">
+                  <Link href="/skola/modely-pravdepodobnosti" className="text-[#e0e0e0] font-semibold hover:text-green">
                     kurz Poisson model
                   </Link>{' '}
                   ve Škole sázení.
                 </p>
               </div>
             </div>
-          </div>
+          </>
         )}
+
+        <div className="mt-5">
+          <button
+            type="button"
+            onClick={() => setGuideOpen((open) => !open)}
+            className={`w-full bg-[#141414] border border-[#222] px-6 py-4 text-[#e0e0e0] text-base font-extrabold uppercase tracking-wide cursor-pointer flex justify-between items-center transition-colors hover:border-green ${
+              guideOpen ? 'rounded-t-xl border-b-0' : 'rounded-xl'
+            }`}
+          >
+            <span>📖 Návod k použití</span>
+            <span className={`text-green text-xl transition-transform ${guideOpen ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+          {guideOpen && (
+            <div className="bg-[#141414] border border-[#222] border-t-0 rounded-b-xl px-6 py-6 text-sm text-[#bbb] leading-relaxed">
+              <h3 className="text-green text-[15px] uppercase tracking-wide mb-2 mt-0">Co je Poissonova kalkulačka?</h3>
+              <p className="mb-4">
+                Poissonovo rozdělení je statistický model, který odhaduje pravděpodobnost výskytu určitého počtu
+                událostí (gólů) v daném časovém intervalu (zápas). Stačí zadat{' '}
+                <strong className="text-[#e0e0e0]">očekávaný průměr gólů</strong> pro každý tým a kalkulačka vypočítá
+                vše ostatní.
+              </p>
+
+              <h3 className="text-green text-[15px] uppercase tracking-wide mb-2 mt-5">Jak zadat vstupy (λ — lambda)</h3>
+              <ol className="list-decimal pl-5 space-y-2 mb-4">
+                <li>
+                  <strong className="text-[#e0e0e0]">Očekávané góly domácích (λ₁)</strong> — průměrný počet gólů, které
+                  domácí tým pravděpodobně vstřelí. Např. <code className="bg-[#1e1e1e] px-1.5 py-0.5 rounded text-green text-[13px]">1,5</code>{' '}
+                  znamená, že tým v průměru dá 1,5 gólu za zápas.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">Očekávané góly hostů (λ₂)</strong> — totéž pro hostující tým.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">Max gólů v matici</strong> — kolik gólů se zobrazí v matici přesného
+                  skóre (3–8). Vyšší hodnota = přesnější výpočet, ale většina pravděpodobnosti je do 4–5 gólů.
+                </li>
+              </ol>
+
+              <h3 className="text-green text-[15px] uppercase tracking-wide mb-2 mt-5">Jak zjistit hodnotu λ?</h3>
+              <p className="mb-2">Nejjednodušší způsob:</p>
+              <ol className="list-decimal pl-5 space-y-2 mb-3">
+                <li>Vezmi si statistiky ligy za aktuální sezónu (např. z Transfermarkt, Flashscore, FBref).</li>
+                <li>
+                  Spočítej <strong className="text-[#e0e0e0]">útočnou sílu</strong> a{' '}
+                  <strong className="text-[#e0e0e0]">obrannou sílu</strong> obou týmů:
+                </li>
+              </ol>
+              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-4 py-3.5 my-2.5 font-mono text-sm text-green text-center">
+                λ domácí = (útočná síla domácích × obranná slabost hostů) × průměr gólů ligy
+                <br />
+                λ hostů = (útočná síla hostů × obranná slabost domácích) × průměr gólů ligy
+              </div>
+              <div className="bg-green/[0.08] border-l-[3px] border-green pl-4 py-3 rounded-r-lg my-3 text-[13px]">
+                <strong className="text-[#e0e0e0]">💡 Tip:</strong> Pokud nechceš počítat ručně, použij prostě průměr
+                vstřelených gólů daného týmu doma (resp. venku) za posledních 10–20 zápasů. Není to tak přesné, ale pro
+                rychlý odhad to stačí.
+              </div>
+
+              <h3 className="text-green text-[15px] uppercase tracking-wide mb-2 mt-5">Co kalkulačka zobrazuje</h3>
+              <ul className="list-disc pl-5 space-y-1.5 mb-4">
+                <li>
+                  <strong className="text-[#e0e0e0]">1X2</strong> — pravděpodobnost výhry domácích, remízy a výhry hostů.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">Nejpravděpodobnější skóre</strong> — výsledek s nejvyšší pravděpodobností.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">BTTS</strong> — pravděpodobnost, že oba týmy skórují.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">Matice přesného skóre</strong> — heatmapa všech kombinací skóre.
+                  Tmavší zelená = vyšší pravděpodobnost.
+                </li>
+                <li>
+                  <strong className="text-[#e0e0e0]">Over/Under</strong> — pravděpodobnosti pro lajny 0.5 až 5.5 (celkový
+                  počet gólů).
+                </li>
+              </ul>
+
+              <h3 className="text-green text-[15px] uppercase tracking-wide mb-2 mt-5">Jak najít value bet</h3>
+              <ol className="list-decimal pl-5 space-y-2 mb-3">
+                <li>Spočítej pravděpodobnost pomocí kalkulačky (např. Over 2.5 = 55 %).</li>
+                <li>Podívej se na kurz u sázkové kanceláře (např. Over 2.5 = kurz 2.10).</li>
+                <li>
+                  Převeď kurz na implied probability:{' '}
+                  <code className="bg-[#1e1e1e] px-1.5 py-0.5 rounded text-green text-[13px]">1 / 2.10 = 47.6 %</code>.
+                </li>
+                <li>
+                  Pokud tvůj model ukazuje <strong className="text-[#e0e0e0]">vyšší pravděpodobnost</strong> než kurz (55 %
+                  &gt; 47.6 %), máš potenciální <strong className="text-[#e0e0e0]">value bet</strong>.
+                </li>
+              </ol>
+              <div className="bg-green/[0.08] border-l-[3px] border-green pl-4 py-3 rounded-r-lg text-[13px]">
+                <strong className="text-[#e0e0e0]">⚠️ Limity modelu:</strong> Poisson předpokládá, že góly padají
+                nezávisle na sobě. Nezohledňuje formu, zranění, červené karty, motivaci ani herní styl. Používej ho jako{' '}
+                <strong className="text-[#e0e0e0]">jeden z nástrojů</strong>, ne jako jediný zdroj rozhodování.
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

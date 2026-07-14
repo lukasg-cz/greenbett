@@ -4,12 +4,6 @@ export interface PoissonInput {
   maxGoals: number;
 }
 
-export interface ScoreProbability {
-  homeGoals: number;
-  awayGoals: number;
-  probability: number;
-}
-
 export interface OutcomeProbabilities {
   homeWin: number;
   draw: number;
@@ -27,15 +21,30 @@ export interface BTTSProbabilities {
   bothScoreNo: number;
 }
 
+export interface MostLikelyScore {
+  homeGoals: number;
+  awayGoals: number;
+  probability: number;
+}
+
 export interface PoissonResult {
-  scores: ScoreProbability[];
+  matrix: number[][];
+  displayMaxGoals: number;
+  safeMax: number;
+  maxProb: number;
   outcomes: OutcomeProbabilities;
   overUnder: OverUnderProbabilities[];
   btts: BTTSProbabilities;
-  mostLikelyScore: ScoreProbability;
+  mostLikelyScore: MostLikelyScore;
 }
 
-const OVER_UNDER_LINES = [0.5, 1.5, 2.5, 3.5, 4.5] as const;
+export const OVER_UNDER_LINES = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5] as const;
+
+export const POISSON_DEFAULTS = {
+  lambdaHome: 1.5,
+  lambdaAway: 1.2,
+  maxGoals: 4,
+};
 
 function factorial(n: number): number {
   if (n <= 1) return 1;
@@ -46,19 +55,23 @@ function factorial(n: number): number {
 
 function poissonPMF(lambda: number, k: number): number {
   if (lambda < 0 || k < 0) return 0;
-  return (Math.exp(-lambda) * Math.pow(lambda, k)) / factorial(k);
+  return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
 }
 
-function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
+export function parseDecimalInput(value: string): number {
+  return parseFloat(value.trim().replace(',', '.'));
+}
+
+export function formatDecimalInput(value: number): string {
+  return String(value).replace('.', ',');
 }
 
 export function validatePoissonInput(input: PoissonInput): string | null {
-  if (input.lambdaHome < 0 || input.lambdaAway < 0) {
-    return 'Očekávané góly (λ) musí být ≥ 0.';
-  }
   if (!Number.isFinite(input.lambdaHome) || !Number.isFinite(input.lambdaAway)) {
-    return 'Zadej platná čísla pro očekávané góly.';
+    return 'Zadej platné hodnoty λ (kladná čísla).';
+  }
+  if (input.lambdaHome < 0 || input.lambdaAway < 0) {
+    return 'Zadej platné hodnoty λ (kladná čísla).';
   }
   if (input.maxGoals < 3 || input.maxGoals > 8 || !Number.isInteger(input.maxGoals)) {
     return 'Max gólů musí být celé číslo mezi 3 a 8.';
@@ -68,65 +81,69 @@ export function validatePoissonInput(input: PoissonInput): string | null {
 
 export function calculatePoisson(input: PoissonInput): PoissonResult {
   const { lambdaHome, lambdaAway, maxGoals } = input;
-  const scores: ScoreProbability[] = [];
+  const safeMax = Math.max(maxGoals, 10);
+
+  const homeProbs: number[] = [];
+  const awayProbs: number[] = [];
+  for (let i = 0; i <= safeMax; i++) {
+    homeProbs[i] = poissonPMF(lambdaHome, i);
+    awayProbs[i] = poissonPMF(lambdaAway, i);
+  }
+
+  const matrix: number[][] = [];
+  let maxProb = 0;
+  for (let h = 0; h <= safeMax; h++) {
+    matrix[h] = [];
+    for (let a = 0; a <= safeMax; a++) {
+      const probability = homeProbs[h] * awayProbs[a];
+      matrix[h][a] = probability;
+      if (probability > maxProb) maxProb = probability;
+    }
+  }
+
   let homeWin = 0;
   let draw = 0;
   let awayWin = 0;
-  let mostLikelyScore: ScoreProbability = { homeGoals: 0, awayGoals: 0, probability: 0 };
+  let mostLikelyScore: MostLikelyScore = { homeGoals: 0, awayGoals: 0, probability: 0 };
 
-  for (let h = 0; h <= maxGoals; h++) {
-    const pHome = poissonPMF(lambdaHome, h);
-    for (let a = 0; a <= maxGoals; a++) {
-      const probability = clamp01(pHome * poissonPMF(lambdaAway, a));
-      const score: ScoreProbability = { homeGoals: h, awayGoals: a, probability };
-      scores.push(score);
-
+  for (let h = 0; h <= safeMax; h++) {
+    for (let a = 0; a <= safeMax; a++) {
+      const probability = matrix[h][a];
       if (h > a) homeWin += probability;
       else if (h === a) draw += probability;
       else awayWin += probability;
 
       if (probability > mostLikelyScore.probability) {
-        mostLikelyScore = score;
+        mostLikelyScore = { homeGoals: h, awayGoals: a, probability };
       }
     }
   }
 
-  const maxTotalGoals = maxGoals * 2;
-  const totalGoalsDist: number[] = [];
-  for (let t = 0; t <= maxTotalGoals; t++) {
-    let prob = 0;
-    for (let h = 0; h <= t; h++) {
-      const a = t - h;
-      if (a >= 0 && a <= maxGoals && h <= maxGoals) {
-        prob += poissonPMF(lambdaHome, h) * poissonPMF(lambdaAway, a);
-      }
+  let bothScoreYes = 0;
+  for (let h = 1; h <= safeMax; h++) {
+    for (let a = 1; a <= safeMax; a++) {
+      bothScoreYes += matrix[h][a];
     }
-    totalGoalsDist[t] = clamp01(prob);
   }
+  const bothScoreNo = 1 - bothScoreYes;
 
   const overUnder: OverUnderProbabilities[] = OVER_UNDER_LINES.map((line) => {
-    const upper = Math.floor(line);
+    const threshold = Math.floor(line);
     let under = 0;
-    for (let t = 0; t <= upper; t++) {
-      under += totalGoalsDist[t] ?? 0;
+    for (let h = 0; h <= safeMax; h++) {
+      for (let a = 0; a <= safeMax; a++) {
+        if (h + a <= threshold) under += matrix[h][a];
+      }
     }
-    under = clamp01(under);
-    return { line, under, over: clamp01(1 - under) };
+    return { line, under, over: 1 - under };
   });
 
-  const pHomeZero = poissonPMF(lambdaHome, 0);
-  const pAwayZero = poissonPMF(lambdaAway, 0);
-  const pBothZero = pHomeZero * pAwayZero;
-  const bothScoreNo = clamp01(pHomeZero + pAwayZero - pBothZero);
-  const bothScoreYes = clamp01(1 - bothScoreNo);
-
   return {
-    scores,
-    outcomes: {
-      homeWin: clamp01(homeWin),
-      draw: clamp01(draw),
-      awayWin: clamp01(awayWin),
-    },
+    matrix,
+    displayMaxGoals: maxGoals,
+    safeMax,
+    maxProb,
+    outcomes: { homeWin, draw, awayWin },
     overUnder,
     btts: { bothScoreYes, bothScoreNo },
     mostLikelyScore,
@@ -137,15 +154,11 @@ export function formatPercent(probability: number, digits = 1): string {
   return `${(probability * 100).toFixed(digits)} %`;
 }
 
-export function getScoreMatrix(
-  scores: ScoreProbability[],
-  maxGoals: number
-): number[][] {
-  const matrix: number[][] = Array.from({ length: maxGoals + 1 }, () =>
-    Array(maxGoals + 1).fill(0)
-  );
-  for (const score of scores) {
-    matrix[score.homeGoals][score.awayGoals] = score.probability;
-  }
-  return matrix;
+export function heatColor(probability: number, maxProb: number): string {
+  const ratio = maxProb > 0 ? probability / maxProb : 0;
+  const boosted = Math.pow(ratio, 0.6);
+  const r = Math.round(26 + boosted * (76 - 26));
+  const g = Math.round(46 + boosted * (175 - 46));
+  const b = Math.round(26 + boosted * (80 - 26));
+  return `rgb(${r}, ${g}, ${b})`;
 }
