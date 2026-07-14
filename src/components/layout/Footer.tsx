@@ -31,7 +31,7 @@ export function Footer() {
             {
               title: 'Nástroje',
               links: [
-                { href: '/live', label: 'Live Dashboard' },
+                { href: '/kurzy', label: 'Porovnání kurzů' },
                 { href: '/scanner', label: 'Value Scanner' },
                 { href: '/kalkulacka', label: 'Kalkulačka' },
                 { href: '/statistiky', label: 'Statistiky lig' },

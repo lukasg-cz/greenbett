@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 const navLinks = [
   { href: '/sporty/football', label: 'Sporty' },
-  { href: '/live', label: 'Live Dashboard' },
+  { href: '/kurzy', label: 'Porovnání kurzů' },
   { href: '/scanner', label: 'Value Scanner' },
   { href: '/kalkulacka', label: 'Kalkulačka' },
   { href: '/statistiky', label: 'Statistiky' },

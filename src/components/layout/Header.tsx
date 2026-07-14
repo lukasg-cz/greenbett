@@ -32,7 +32,7 @@ export function Header() {
             <MegaDropdown>
               <MegaTitle>Analytické nástroje</MegaTitle>
               <div className="grid grid-cols-1 gap-0">
-                <MegaItem href="/live" icon="fa-tv" title="Live Dashboard" description="Real-time přehled zápasů a kurzů" />
+                <MegaItem href="/kurzy" icon="fa-balance-scale" title="Porovnání kurzů" description="Porovnej kurzy napříč českými sázkovkami" />
                 <MegaItem href="/scanner" icon="fa-radar" title="Value Bet Scanner" description="Automatická detekce value příležitostí" />
                 <MegaItem href="/kalkulacka" icon="fa-calculator" title="Bankroll Kalkulačka" description="Kelly criterion, flat staking, optimální stake" />
                 <MegaItem href="/statistiky" icon="fa-chart-bar" title="Statistiky lig" description="Komplexní data per liga a tým" />
