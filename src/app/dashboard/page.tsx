@@ -30,7 +30,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { href: '/live', label: 'Live Dashboard', icon: 'fa-tv' },
-                { href: '/scanner', label: 'Value Scanner', icon: 'fa-radar' },
+                { href: '/scanner', label: 'Value Scanner', icon: 'fa-search-dollar' },
                 { href: '/kalkulacka', label: 'Kalkulačka', icon: 'fa-calculator' },
                 { href: '/vysledky', label: 'Výsledky', icon: 'fa-chart-line' },
               ].map((link) => (

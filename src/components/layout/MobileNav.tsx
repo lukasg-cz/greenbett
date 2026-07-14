@@ -9,6 +9,7 @@ const navLinks = [
   { href: '/live', label: 'Live Dashboard' },
   { href: '/scanner', label: 'Value Scanner' },
   { href: '/nastroje/value-bet', label: 'Value Bet' },
+  { href: '/nastroje/stats-finder', label: 'Stats Finder' },
   { href: '/kalkulacka', label: 'Kalkulačka' },
   { href: '/nastroje/poisson', label: 'Poisson' },
   { href: '/statistiky', label: 'Statistiky' },

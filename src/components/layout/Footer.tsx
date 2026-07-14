@@ -35,6 +35,7 @@ export function Footer() {
               links: [
                 { href: '/scanner', label: 'Value Scanner' },
                 { href: '/nastroje/value-bet', label: 'Value Bet kalkulačka' },
+                { href: '/nastroje/stats-finder', label: 'Football Stats Finder' },
                 { href: '/kalkulacka', label: 'Kalkulačka' },
                 { href: '/nastroje/poisson', label: 'Poisson kalkulačka' },
                 { href: '/statistiky', label: 'Statistiky lig' },

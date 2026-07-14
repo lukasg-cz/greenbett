@@ -133,7 +133,7 @@ export function SchoolLanding() {
             {[
               { href: '/kalkulacka', icon: 'fa-calculator', title: 'Kalkulačka', desc: 'Kelly, flat staking, unit size' },
               { href: '/kurzy', icon: 'fa-balance-scale', title: 'Porovnání kurzů', desc: 'Line shopping v praxi' },
-              { href: '/scanner', icon: 'fa-radar', title: 'Value Scanner', desc: 'Detekce EV+ příležitostí' },
+              { href: '/scanner', icon: 'fa-search-dollar', title: 'Value Scanner', desc: 'Detekce EV+ příležitostí' },
               { href: '/glosar', icon: 'fa-book', title: 'Glosář', desc: 'Pojmy ze sázení' },
             ].map((tool) => (
               <Link
