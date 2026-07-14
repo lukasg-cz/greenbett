@@ -1,90 +1,93 @@
 import { parseDecimalInput } from './poisson';
 
-export type ValueBetMode = 'quick' | 'advanced';
+export type MarketValueBadge = 'value' | 'weak' | 'no';
 
-export type ValueBetType =
-  | '1x2-home'
-  | '1x2-draw'
-  | '1x2-away'
-  | 'over'
-  | 'under'
-  | 'btts-yes'
-  | 'btts-no';
-
-export type ValueBetVerdict = 'value' | 'weak-value' | 'no-value';
-
-export interface ValueBetQuickInput {
-  myProbPercent: number;
-  odds: number;
+export interface H2HMatchInput {
+  homeGoals: number;
+  awayGoals: number;
+  weight: number;
 }
 
-export interface ValueBetAdvancedInput {
-  betType: ValueBetType;
+export interface ValueBetAnalyzeInput {
+  leagueAvg: number;
+  leagueHomeAvg: number;
+  leagueAwayAvg: number;
   homeScored: number;
   homeConceded: number;
   awayScored: number;
   awayConceded: number;
-  leagueAvg: number;
-  odds: number;
+  h2h: H2HMatchInput[];
+  odds1: number;
+  oddsX: number;
+  odds2: number;
   ouLine: number;
-}
-
-export interface ValueBetCalculateInput {
-  mode: ValueBetMode;
+  oddsOver: number;
+  oddsUnder: number;
+  oddsBttsYes: number;
+  oddsBttsNo: number;
   bankroll: number;
   kellyFraction: number;
-  quick: ValueBetQuickInput;
-  advanced: ValueBetAdvancedInput;
 }
 
-export interface PoissonDerivedProb {
+export interface MarketAnalysis {
+  name: string;
+  prob: number;
+  odds: number;
+  implied: number;
+  edge: number;
+  ev: number;
+  valid: boolean;
+  badge: MarketValueBadge;
+}
+
+export interface ValueBetAnalyzeResult {
   lambdaHome: number;
   lambdaAway: number;
-  myProb: number;
-}
-
-export interface ValueBetResult {
-  myProb: number;
-  odds: number;
-  impliedProb: number;
-  ev: number;
-  edge: number;
-  kellyFull: number;
-  kellyYour: number;
-  stakeFullKelly: number;
-  stakeYourKelly: number;
-  stakeFlat: number;
-  verdict: ValueBetVerdict;
-  poisson?: PoissonDerivedProb;
-  stakeBarPercent: number;
-  stakeBarLevel: 'safe' | 'moderate' | 'risky';
+  lambdaHomeBase: number;
+  lambdaAwayBase: number;
+  h2hValid: boolean;
+  h2hHomeGoals: number;
+  h2hAwayGoals: number;
+  h2hSummaries: string[];
+  markets: MarketAnalysis[];
+  bestMarket: MarketAnalysis | null;
+  stake: {
+    fullKelly: number;
+    yourKelly: number;
+    flat: number;
+    kellyFullPct: number;
+    kellyYourPct: number;
+  } | null;
 }
 
 export const VALUE_BET_DEFAULTS = {
-  quick: { myProbPercent: 55, odds: 2.1 },
-  advanced: {
-    betType: '1x2-home' as ValueBetType,
-    homeScored: 1.8,
-    homeConceded: 0.9,
-    awayScored: 1.1,
-    awayConceded: 1.5,
-    leagueAvg: 2.7,
-    odds: 2.1,
-    ouLine: 2.5,
-  },
+  leagueAvg: 2.7,
+  leagueHomeAvg: 1.5,
+  leagueAwayAvg: 1.2,
+  homeScored: 1.8,
+  homeConceded: 0.9,
+  homeSample: 15,
+  awayScored: 1.1,
+  awayConceded: 1.5,
+  awaySample: 15,
+  h2h: [
+    { homeGoals: 2, awayGoals: 1, weight: 0.5 },
+    { homeGoals: 1, awayGoals: 1, weight: 0.3 },
+    { homeGoals: 3, awayGoals: 0, weight: 0.2 },
+  ],
+  odds1: 2.1,
+  oddsX: 3.4,
+  odds2: 3.5,
+  ouLine: 2.5,
+  oddsOver: 1.85,
+  oddsUnder: 1.95,
+  oddsBttsYes: 1.75,
+  oddsBttsNo: 2.0,
   bankroll: 10000,
   kellyPercent: 25,
 };
 
-export const BET_TYPE_OPTIONS: Array<{ id: ValueBetType; label: string }> = [
-  { id: '1x2-home', label: '1 (domácí)' },
-  { id: '1x2-draw', label: 'X (remíza)' },
-  { id: '1x2-away', label: '2 (hosté)' },
-  { id: 'over', label: 'Over 2.5' },
-  { id: 'under', label: 'Under 2.5' },
-  { id: 'btts-yes', label: 'BTTS Ano' },
-  { id: 'btts-no', label: 'BTTS Ne' },
-];
+export const OU_LINE_OPTIONS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5];
 
 function factorial(n: number): number {
   if (n <= 1) return 1;
@@ -94,15 +97,12 @@ function factorial(n: number): number {
 }
 
 function poissonPMF(lambda: number, k: number): number {
+  if (lambda === 0 && k === 0) return 1;
+  if (lambda === 0) return 0;
   return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
 }
 
-export function calcPoissonBetProbability(
-  lambdaHome: number,
-  lambdaAway: number,
-  betType: ValueBetType,
-  ouLine: number
-): number {
+function computePoissonProbs(lambdaHome: number, lambdaAway: number, ouLine: number) {
   const maxG = 10;
   const homeProbs: number[] = [];
   const awayProbs: number[] = [];
@@ -119,171 +119,181 @@ export function calcPoissonBetProbability(
   let overProb = 0;
   const threshold = Math.floor(ouLine);
 
-  for (let h = 0; h <= maxG; h++) {
-    for (let a = 0; a <= maxG; a++) {
-      const p = homeProbs[h] * awayProbs[a];
-      if (h > a) homeWin += p;
-      else if (h === a) draw += p;
+  for (let hg = 0; hg <= maxG; hg++) {
+    for (let ag = 0; ag <= maxG; ag++) {
+      const p = homeProbs[hg] * awayProbs[ag];
+      if (hg > ag) homeWin += p;
+      else if (hg === ag) draw += p;
       else awayWin += p;
-
-      if (h >= 1 && a >= 1) bttsYes += p;
-      if (h + a > threshold) overProb += p;
+      if (hg >= 1 && ag >= 1) bttsYes += p;
+      if (hg + ag > threshold) overProb += p;
     }
   }
 
-  switch (betType) {
-    case '1x2-home':
-      return homeWin;
-    case '1x2-draw':
-      return draw;
-    case '1x2-away':
-      return awayWin;
-    case 'over':
-      return overProb;
-    case 'under':
-      return 1 - overProb;
-    case 'btts-yes':
-      return bttsYes;
-    case 'btts-no':
-      return 1 - bttsYes;
-    default:
-      return homeWin;
-  }
-}
-
-export function computeLambdasFromStats(
-  homeScored: number,
-  homeConceded: number,
-  awayScored: number,
-  awayConceded: number,
-  leagueAvg: number
-): { lambdaHome: number; lambdaAway: number } {
-  const avgPerTeam = leagueAvg / 2;
-  const homeAttack = homeScored / avgPerTeam;
-  const homeDefense = homeConceded / avgPerTeam;
-  const awayAttack = awayScored / avgPerTeam;
-  const awayDefense = awayConceded / avgPerTeam;
-
   return {
-    lambdaHome: homeAttack * awayDefense * avgPerTeam,
-    lambdaAway: awayAttack * homeDefense * avgPerTeam,
+    homeWin,
+    draw,
+    awayWin,
+    bttsYes,
+    bttsNo: 1 - bttsYes,
+    overProb,
+    underProb: 1 - overProb,
   };
 }
 
-export function validateValueBetInput(input: ValueBetCalculateInput): string | null {
-  const { bankroll, kellyFraction } = input;
-
-  if (!Number.isFinite(bankroll) || bankroll <= 0) {
-    return 'Zkontroluj zadané hodnoty. Bankroll musí být > 0.';
+function analyzeMarket(name: string, prob: number, odds: number): MarketAnalysis {
+  if (!Number.isFinite(odds) || odds <= 1) {
+    return { name, prob, odds, implied: 0, edge: 0, ev: -1, valid: false, badge: 'no' };
   }
+  const implied = 1 / odds;
+  const edge = prob - implied;
+  const ev = prob * odds - 1;
+  let badge: MarketValueBadge = 'no';
+  if (ev > 0.05) badge = 'value';
+  else if (ev > 0) badge = 'weak';
+  return { name, prob, odds, implied, edge, ev, valid: true, badge };
+}
 
-  if (kellyFraction <= 0 || kellyFraction > 1) {
+export function validateValueBetInput(input: ValueBetAnalyzeInput): string | null {
+  const required = [
+    input.leagueAvg,
+    input.leagueHomeAvg,
+    input.leagueAwayAvg,
+    input.homeScored,
+    input.homeConceded,
+    input.awayScored,
+    input.awayConceded,
+    input.odds1,
+    input.oddsX,
+    input.odds2,
+    input.bankroll,
+  ];
+  if (required.some((v) => !Number.isFinite(v) || v <= 0)) {
+    return 'Zkontroluj všechny vstupy — musí být kladná čísla.';
+  }
+  if (input.kellyFraction <= 0 || input.kellyFraction > 1) {
     return 'Kelly frakce musí být mezi 10 % a 100 %.';
   }
-
-  if (input.mode === 'quick') {
-    const prob = input.quick.myProbPercent;
-    const odds = input.quick.odds;
-    if (
-      !Number.isFinite(prob) ||
-      !Number.isFinite(odds) ||
-      prob <= 0 ||
-      prob > 100 ||
-      odds <= 1
-    ) {
-      return 'Zkontroluj zadané hodnoty. Pravděpodobnost 1–100 %, kurz > 1.';
-    }
-    return null;
-  }
-
-  const adv = input.advanced;
-  const values = [
-    adv.homeScored,
-    adv.homeConceded,
-    adv.awayScored,
-    adv.awayConceded,
-    adv.leagueAvg,
-    adv.odds,
-    adv.ouLine,
-  ];
-  if (values.some((v) => !Number.isFinite(v) || v < 0) || adv.odds <= 1) {
-    return 'Zkontroluj statistiky týmů a kurz bookmakera.';
-  }
-
   return null;
 }
 
-export function calculateValueBet(input: ValueBetCalculateInput): ValueBetResult {
-  const { mode, bankroll, kellyFraction } = input;
-  let myProb: number;
-  let odds: number;
-  let poisson: PoissonDerivedProb | undefined;
+export function analyzeValueBet(input: ValueBetAnalyzeInput): ValueBetAnalyzeResult {
+  const {
+    leagueHomeAvg,
+    leagueAwayAvg,
+    homeScored,
+    homeConceded,
+    awayScored,
+    awayConceded,
+    h2h,
+    ouLine,
+    bankroll,
+    kellyFraction,
+  } = input;
 
-  if (mode === 'quick') {
-    myProb = input.quick.myProbPercent / 100;
-    odds = input.quick.odds;
-  } else {
-    const adv = input.advanced;
-    odds = adv.odds;
-    const { lambdaHome, lambdaAway } = computeLambdasFromStats(
-      adv.homeScored,
-      adv.homeConceded,
-      adv.awayScored,
-      adv.awayConceded,
-      adv.leagueAvg
-    );
-    myProb = calcPoissonBetProbability(lambdaHome, lambdaAway, adv.betType, adv.ouLine);
-    poisson = { lambdaHome, lambdaAway, myProb };
+  const homeAttack = homeScored / leagueHomeAvg;
+  const homeDefense = homeConceded / leagueAwayAvg;
+  const awayAttack = awayScored / leagueAwayAvg;
+  const awayDefense = awayConceded / leagueHomeAvg;
+
+  const lambdaHomeBase = homeAttack * awayDefense * leagueHomeAvg;
+  const lambdaAwayBase = awayAttack * homeDefense * leagueAwayAvg;
+
+  let h2hHomeGoals = 0;
+  let h2hAwayGoals = 0;
+  let h2hValid = true;
+  const h2hSummaries: string[] = [];
+
+  for (const match of h2h) {
+    if (!Number.isFinite(match.homeGoals) || !Number.isFinite(match.awayGoals)) {
+      h2hValid = false;
+      break;
+    }
+    h2hHomeGoals += match.homeGoals * match.weight;
+    h2hAwayGoals += match.awayGoals * match.weight;
+    const result =
+      match.homeGoals > match.awayGoals
+        ? 'výhra domácích'
+        : match.homeGoals === match.awayGoals
+          ? 'remíza'
+          : 'výhra hostů';
+    h2hSummaries.push(`${match.homeGoals}:${match.awayGoals} (${result})`);
   }
 
-  const impliedProb = 1 / odds;
-  const ev = myProb * odds - 1;
-  const edge = myProb - impliedProb;
+  const h2hWeight = 0.2;
+  let lambdaHome = h2hValid
+    ? lambdaHomeBase * (1 - h2hWeight) + h2hHomeGoals * h2hWeight
+    : lambdaHomeBase;
+  let lambdaAway = h2hValid
+    ? lambdaAwayBase * (1 - h2hWeight) + h2hAwayGoals * h2hWeight
+    : lambdaAwayBase;
 
-  let kellyFull = (myProb * odds - 1) / (odds - 1);
-  if (kellyFull < 0) kellyFull = 0;
-  const kellyYour = kellyFull * kellyFraction;
-  const flat = 0.02;
+  lambdaHome = Math.max(lambdaHome, 0.05);
+  lambdaAway = Math.max(lambdaAway, 0.05);
 
-  let verdict: ValueBetVerdict = 'no-value';
-  if (ev > 0.05) verdict = 'value';
-  else if (ev > 0) verdict = 'weak-value';
+  const probs = computePoissonProbs(lambdaHome, lambdaAway, ouLine);
 
-  const kellyYourPercent = kellyYour * 100;
-  const stakeBarPercent = Math.min((kellyYourPercent / 25) * 100, 100);
-  let stakeBarLevel: 'safe' | 'moderate' | 'risky' = 'risky';
-  if (kellyYourPercent < 3) stakeBarLevel = 'safe';
-  else if (kellyYourPercent < 8) stakeBarLevel = 'moderate';
+  const markets: MarketAnalysis[] = [
+    analyzeMarket('1 (Domácí)', probs.homeWin, input.odds1),
+    analyzeMarket('X (Remíza)', probs.draw, input.oddsX),
+    analyzeMarket('2 (Hosté)', probs.awayWin, input.odds2),
+    analyzeMarket(`Over ${ouLine.toFixed(1)}`, probs.overProb, input.oddsOver),
+    analyzeMarket(`Under ${ouLine.toFixed(1)}`, probs.underProb, input.oddsUnder),
+    analyzeMarket('BTTS Ano', probs.bttsYes, input.oddsBttsYes),
+    analyzeMarket('BTTS Ne', probs.bttsNo, input.oddsBttsNo),
+  ];
+
+  let bestMarket: MarketAnalysis | null = null;
+  let bestEV = -999;
+
+  for (const market of markets) {
+    if (!market.valid) continue;
+    if (market.ev > bestEV) {
+      bestEV = market.ev;
+      bestMarket = market;
+    }
+  }
+
+  let stake: ValueBetAnalyzeResult['stake'] = null;
+  if (bestMarket && bestEV > 0) {
+    let kellyFull = (bestMarket.prob * bestMarket.odds - 1) / (bestMarket.odds - 1);
+    if (kellyFull < 0) kellyFull = 0;
+    const kellyYour = kellyFull * kellyFraction;
+    stake = {
+      fullKelly: kellyFull * bankroll,
+      yourKelly: kellyYour * bankroll,
+      flat: 0.02 * bankroll,
+      kellyFullPct: kellyFull * 100,
+      kellyYourPct: kellyYour * 100,
+    };
+  }
 
   return {
-    myProb,
-    odds,
-    impliedProb,
-    ev,
-    edge,
-    kellyFull,
-    kellyYour,
-    stakeFullKelly: kellyFull * bankroll,
-    stakeYourKelly: kellyYour * bankroll,
-    stakeFlat: flat * bankroll,
-    verdict,
-    poisson,
-    stakeBarPercent,
-    stakeBarLevel,
+    lambdaHome,
+    lambdaAway,
+    lambdaHomeBase,
+    lambdaAwayBase,
+    h2hValid,
+    h2hHomeGoals,
+    h2hAwayGoals,
+    h2hSummaries,
+    markets: markets.filter((m) => m.valid),
+    bestMarket: bestEV > 0 ? bestMarket : null,
+    stake,
   };
 }
 
-export function formatPercentSigned(value: number, digits = 1): string {
+export function formatPercentNum(value: number, digits = 1): string {
+  return `${(value * 100).toFixed(digits)} %`;
+}
+
+export function formatPercentSignedNum(value: number, digits = 1): string {
   const pct = (value * 100).toFixed(digits);
   return `${value >= 0 ? '+' : ''}${pct} %`;
 }
 
-export function formatPercent(value: number, digits = 1): string {
-  return `${(value * 100).toFixed(digits)} %`;
-}
-
 export function formatCZK(value: number): string {
-  if (value < 0) return '0 Kč';
+  if (value <= 0) return '0 Kč';
   return `${Math.round(value).toLocaleString('cs-CZ')} Kč`;
 }
 
