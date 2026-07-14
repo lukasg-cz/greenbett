@@ -1,19 +1,8 @@
-export interface LeagueOption {
-  value: string;
-  label: string;
-  group: string;
-  country: string;
-  fbref: string;
-  tm: string;
-  fs: string;
-  sway: string;
-}
-
 export interface StatsLink {
   icon: string;
   name: string;
   url: string;
-  tag?: 'best' | 'good';
+  tag?: 'primary' | 'alt';
   tagText?: string;
 }
 
@@ -24,31 +13,11 @@ export interface StatsLinksResult {
   odds: StatsLink[];
 }
 
-export const LEAGUE_OPTIONS: LeagueOption[] = [
-  { value: 'premier-league', label: 'Premier League', group: 'Top 5 lig', country: 'england', fbref: '9/Premier-League', tm: 'GB1', fs: 'england/premier-league', sway: 'england/premier-league' },
-  { value: 'la-liga', label: 'La Liga', group: 'Top 5 lig', country: 'spain', fbref: '12/La-Liga', tm: 'ES1', fs: 'spain/laliga', sway: 'spain/primera-division' },
-  { value: 'bundesliga', label: 'Bundesliga', group: 'Top 5 lig', country: 'germany', fbref: '20/Bundesliga', tm: 'L1', fs: 'germany/bundesliga', sway: 'germany/bundesliga' },
-  { value: 'serie-a', label: 'Serie A', group: 'Top 5 lig', country: 'italy', fbref: '11/Serie-A', tm: 'IT1', fs: 'italy/serie-a', sway: 'italy/serie-a' },
-  { value: 'ligue-1', label: 'Ligue 1', group: 'Top 5 lig', country: 'france', fbref: '13/Ligue-1', tm: 'FR1', fs: 'france/ligue-1', sway: 'france/ligue-1' },
-  { value: 'eredivisie', label: 'Eredivisie', group: 'Další ligy', country: 'netherlands', fbref: '23/Eredivisie', tm: 'NL1', fs: 'netherlands/eredivisie', sway: 'netherlands/eredivisie' },
-  { value: 'primeira-liga', label: 'Primeira Liga', group: 'Další ligy', country: 'portugal', fbref: '32/Primeira-Liga', tm: 'PO1', fs: 'portugal/liga-portugal', sway: 'portugal/portuguese-liga' },
-  { value: 'super-lig', label: 'Süper Lig', group: 'Další ligy', country: 'turkey', fbref: '26/Super-Lig', tm: 'TR1', fs: 'turkey/super-lig', sway: 'turkey/super-lig' },
-  { value: 'belgian-pro-league', label: 'Belgian Pro League', group: 'Další ligy', country: 'belgium', fbref: '37/Belgian-Pro-League', tm: 'BE1', fs: 'belgium/jupiler-pro-league', sway: 'belgium/first-division-a' },
-  { value: 'scottish-premiership', label: 'Scottish Premiership', group: 'Další ligy', country: 'scotland', fbref: '40/Scottish-Premiership', tm: 'SC1', fs: 'scotland/premiership', sway: 'scotland/premier-league' },
-  { value: 'chance-liga', label: 'Chance Liga (Česko)', group: 'Střední Evropa', country: 'czech', fbref: '66/Czech-First-League', tm: 'CZ1', fs: 'czech-republic/1-liga', sway: 'czech-republic/czech-liga' },
-  { value: 'nike-liga', label: 'Nike Liga (Slovensko)', group: 'Střední Evropa', country: 'slovakia', fbref: 'none', tm: 'SK1', fs: 'slovakia/nike-liga', sway: 'slovakia/super-liga' },
-  { value: 'ekstraklasa', label: 'Ekstraklasa (Polsko)', group: 'Střední Evropa', country: 'poland', fbref: '36/Ekstraklasa', tm: 'PL1', fs: 'poland/ekstraklasa', sway: 'poland/ekstraklasa' },
-  { value: 'austrian-bundesliga', label: 'Bundesliga (Rakousko)', group: 'Střední Evropa', country: 'austria', fbref: '56/Austrian-Bundesliga', tm: 'A1', fs: 'austria/bundesliga', sway: 'austria/bundesliga' },
-  { value: 'champions-league', label: 'Champions League', group: 'Poháry', country: 'europe', fbref: '8/Champions-League', tm: 'CL', fs: 'europe/champions-league', sway: 'europe/uefa-champions-league' },
-  { value: 'europa-league', label: 'Europa League', group: 'Poháry', country: 'europe', fbref: '19/Europa-League', tm: 'EL', fs: 'europe/europa-league', sway: 'europe/uefa-europa-league' },
-  { value: 'conference-league', label: 'Conference League', group: 'Poháry', country: 'europe', fbref: '882/Conference-League', tm: 'ECLQ', fs: 'europe/europa-conference-league', sway: 'europe/uefa-europa-conference-league' },
-];
-
 export const CHECKLIST_ITEMS = [
   'Ligový průměr gólů',
-  'Průměr gólů domácích (liga)',
-  'Průměr gólů hostů (liga)',
-  'Góly domácího týmu doma',
+  'Průměr domácích (liga)',
+  'Průměr hostů (liga)',
+  'Góly domácího doma',
   'Obdržené domácího doma',
   'Góly hostů venku',
   'Obdržené hostů venku',
@@ -56,76 +25,47 @@ export const CHECKLIST_ITEMS = [
   'Kurzy bookmakera',
 ];
 
-const SLUG_MAP: Record<string, string> = {
-  á: 'a', č: 'c', ď: 'd', é: 'e', ě: 'e', í: 'i', ň: 'n', ó: 'o', ř: 'r', š: 's', ť: 't', ú: 'u', ů: 'u', ý: 'y', ž: 'z',
-  ä: 'a', ö: 'o', ü: 'u', ß: 'ss', ñ: 'n', ç: 'c', ø: 'o', å: 'a', ã: 'a', õ: 'o', ł: 'l', ś: 's', ź: 'z', ż: 'z', ć: 'c', ę: 'e', ą: 'a',
-};
-
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .split('')
-    .map((c) => SLUG_MAP[c] ?? c)
-    .join('')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-export function googleSlug(text: string): string {
+function enc(text: string): string {
   return encodeURIComponent(text.trim());
 }
 
-export function generateStatsLinks(homeTeam: string, awayTeam: string, league: LeagueOption): StatsLinksResult {
+export function generateStatsLinks(homeTeam: string, awayTeam: string): StatsLinksResult {
   const home = homeTeam.trim();
   const away = awayTeam.trim();
-  const homeEnc = googleSlug(home);
-  const awayEnc = googleSlug(away);
-  const leagueName = league.label;
-  const fsPath = league.fs;
-  const fbrefPath = league.fbref;
+  const homeEnc = enc(home);
+  const awayEnc = enc(away);
 
   const teamStats: StatsLink[] = [
-    { icon: '📈', name: `FBref — ${home} statistiky`, url: `https://www.google.com/search?q=site:fbref.com+${homeEnc}+stats&btnI=1`, tag: 'best', tagText: 'Nejlepší' },
-    { icon: '📈', name: `FBref — ${away} statistiky`, url: `https://www.google.com/search?q=site:fbref.com+${awayEnc}+stats&btnI=1`, tag: 'best', tagText: 'Nejlepší' },
-    { icon: '⚡', name: `Flashscore — ${home}`, url: `https://www.flashscore.com/search/?q=${homeEnc}`, tag: 'good', tagText: 'Rychlé' },
-    { icon: '⚡', name: `Flashscore — ${away}`, url: `https://www.flashscore.com/search/?q=${awayEnc}`, tag: 'good', tagText: 'Rychlé' },
+    { icon: '🟢', name: `Livesport — ${home} (statistiky)`, url: `https://www.livesport.cz/search/?q=${homeEnc}`, tag: 'primary', tagText: 'Hlavní' },
+    { icon: '🔴', name: `Livesport — ${away} (statistiky)`, url: `https://www.livesport.cz/search/?q=${awayEnc}`, tag: 'primary', tagText: 'Hlavní' },
+    { icon: '📈', name: `FBref — ${home} (xG, detailní stats)`, url: `https://www.google.com/search?q=site:fbref.com+${homeEnc}+stats`, tag: 'alt', tagText: 'Detailní' },
+    { icon: '📈', name: `FBref — ${away} (xG, detailní stats)`, url: `https://www.google.com/search?q=site:fbref.com+${awayEnc}+stats`, tag: 'alt', tagText: 'Detailní' },
     { icon: '📊', name: `FootyStats — ${home} + ${away}`, url: `https://www.google.com/search?q=site:footystats.org+${homeEnc}+${awayEnc}` },
+    { icon: '🔍', name: `Google — „${home} goals stats home away per game"`, url: `https://www.google.com/search?q=${homeEnc}+goals+stats+home+away+per+game+2024+2025` },
+    { icon: '🔍', name: `Google — „${away} goals stats home away per game"`, url: `https://www.google.com/search?q=${awayEnc}+goals+stats+home+away+per+game+2024+2025` },
   ];
 
-  const leagueLinks: StatsLink[] = [];
-  if (fbrefPath !== 'none') {
-    leagueLinks.push({
-      icon: '📈',
-      name: `FBref — ${leagueName} stats`,
-      url: `https://fbref.com/en/comps/${fbrefPath}/stats`,
-      tag: 'best',
-      tagText: 'Nejlepší',
-    });
-  }
-  leagueLinks.push(
-    { icon: '⚡', name: `Flashscore — ${leagueName} tabulka`, url: `https://www.flashscore.com/football/${fsPath}/standings/`, tag: 'good', tagText: 'Rychlé' },
-    { icon: '🌐', name: `Soccerway — ${leagueName}`, url: `https://www.google.com/search?q=site:soccerway.com+${googleSlug(leagueName)}+standings` },
-    { icon: '📊', name: `FootyStats — ${leagueName} průměr gólů`, url: `https://www.google.com/search?q=site:footystats.org+${googleSlug(leagueName)}+stats` },
-    { icon: '🔍', name: `Google — „${leagueName} average goals per game"`, url: `https://www.google.com/search?q=${googleSlug(leagueName)}+average+goals+per+game+home+away` },
-  );
+  const league: StatsLink[] = [
+    { icon: '🟢', name: 'Livesport — tabulka a statistiky ligy', url: `https://www.livesport.cz/search/?q=${homeEnc}`, tag: 'primary', tagText: 'Hlavní' },
+    { icon: '📈', name: 'FBref — ligové statistiky (průměr gólů)', url: `https://www.google.com/search?q=site:fbref.com+${homeEnc}+league+stats`, tag: 'alt', tagText: 'Detailní' },
+    { icon: '📊', name: 'FootyStats — ligový přehled gólů', url: `https://www.google.com/search?q=site:footystats.org+league+stats+goals+per+match+${homeEnc}` },
+    { icon: '🌐', name: 'Soccerway — tabulka ligy', url: `https://www.google.com/search?q=site:soccerway.com+${homeEnc}+standings` },
+    { icon: '🔍', name: 'Google — „[liga] average goals per game home away"', url: `https://www.google.com/search?q=${homeEnc}+league+average+goals+per+game+home+away+2024+2025` },
+  ];
 
   const h2h: StatsLink[] = [
-    { icon: '⚡', name: `Flashscore — ${home} vs ${away} H2H`, url: `https://www.flashscore.com/search/?q=${homeEnc}+${awayEnc}`, tag: 'best', tagText: 'Nejlepší' },
-    { icon: '⚔️', name: '11v11 — vzájemné zápasy', url: `https://www.11v11.com/teams/search/?q=${homeEnc}` },
+    { icon: '⚔️', name: `Livesport — ${home} vs ${away} H2H`, url: `https://www.livesport.cz/search/?q=${homeEnc}+${awayEnc}`, tag: 'primary', tagText: 'Hlavní' },
+    { icon: '⚔️', name: 'BetExplorer — vzájemné zápasy', url: `https://www.google.com/search?q=site:betexplorer.com+${homeEnc}+vs+${awayEnc}+h2h`, tag: 'alt', tagText: 'Alternativa' },
     { icon: '🌐', name: 'Soccerway — H2H', url: `https://www.google.com/search?q=site:soccerway.com+${homeEnc}+vs+${awayEnc}+head+to+head` },
-    { icon: '🔍', name: `Google — „${home} vs ${away} head to head"`, url: `https://www.google.com/search?q=${homeEnc}+vs+${awayEnc}+head+to+head+last+matches` },
+    { icon: '🔍', name: `Google — „${home} vs ${away} head to head last matches"`, url: `https://www.google.com/search?q=${homeEnc}+vs+${awayEnc}+head+to+head+last+matches+results` },
   ];
 
   const odds: StatsLink[] = [
-    { icon: '📉', name: `OddsPortal — ${home} vs ${away}`, url: `https://www.google.com/search?q=site:oddsportal.com+${homeEnc}+${awayEnc}&btnI=1`, tag: 'best', tagText: 'Nejlepší' },
-    { icon: '⚡', name: 'Flashscore — kurzy na zápas', url: `https://www.flashscore.com/search/?q=${homeEnc}+${awayEnc}`, tag: 'good', tagText: 'Rychlé' },
-    { icon: '📊', name: 'BetExplorer — porovnání kurzů', url: `https://www.google.com/search?q=site:betexplorer.com+${homeEnc}+${awayEnc}&btnI=1` },
-    { icon: '🔍', name: `Google — „${home} vs ${away} odds"`, url: `https://www.google.com/search?q=${homeEnc}+vs+${awayEnc}+odds+1x2+over+under+btts` },
+    { icon: '📉', name: 'Livesport — kurzy na zápas', url: `https://www.livesport.cz/search/?q=${homeEnc}+${awayEnc}`, tag: 'primary', tagText: 'Hlavní' },
+    { icon: '📉', name: 'OddsPortal — porovnání kurzů', url: `https://www.google.com/search?q=site:oddsportal.com+${homeEnc}+${awayEnc}`, tag: 'alt', tagText: 'Porovnání' },
+    { icon: '📊', name: 'BetExplorer — kurzy od více bookmakerů', url: `https://www.google.com/search?q=site:betexplorer.com+${homeEnc}+${awayEnc}` },
+    { icon: '🔍', name: `Google — „${home} vs ${away} odds 1x2 over under btts"`, url: `https://www.google.com/search?q=${homeEnc}+vs+${awayEnc}+odds+1x2+over+under+btts` },
   ];
 
-  return { teamStats, league: leagueLinks, h2h, odds };
-}
-
-export function getLeagueByValue(value: string): LeagueOption | undefined {
-  return LEAGUE_OPTIONS.find((l) => l.value === value);
+  return { teamStats, league, h2h, odds };
 }

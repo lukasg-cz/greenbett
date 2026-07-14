@@ -4,19 +4,12 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   CHECKLIST_ITEMS,
-  LEAGUE_OPTIONS,
   generateStatsLinks,
-  getLeagueByValue,
   type StatsLink,
 } from '@/lib/calculations/football-stats-finder';
 
 const inputClass =
   'w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3.5 py-3 text-white text-base outline-none transition-colors focus:border-green placeholder:text-[#555]';
-
-const selectClass =
-  'w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3.5 py-3 text-white text-base outline-none transition-colors focus:border-green';
-
-const LEAGUE_GROUPS = Array.from(new Set(LEAGUE_OPTIONS.map((l) => l.group)));
 
 function LinkButton({ link }: { link: StatsLink }) {
   return (
@@ -30,8 +23,8 @@ function LinkButton({ link }: { link: StatsLink }) {
       <span className="flex-1">{link.name}</span>
       {link.tag ? (
         <span
-          className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-[10px] font-bold ${
-            link.tag === 'best'
+          className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-[10px] font-bold shrink-0 ${
+            link.tag === 'primary'
               ? 'bg-green/15 text-green border border-green/30'
               : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
           }`}
@@ -85,12 +78,10 @@ function LinkCategory({
 export function FootballStatsFinder() {
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
-  const [leagueValue, setLeagueValue] = useState('chance-liga');
   const [checked, setChecked] = useState<boolean[]>(() => CHECKLIST_ITEMS.map(() => false));
   const [searchResult, setSearchResult] = useState<{
     home: string;
     away: string;
-    leagueLabel: string;
     links: ReturnType<typeof generateStatsLinks>;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -105,18 +96,12 @@ export function FootballStatsFinder() {
       setError('Zadej oba týmy.');
       return;
     }
-    const league = getLeagueByValue(leagueValue);
-    if (!league) {
-      setError('Vyber platnou ligu.');
-      return;
-    }
     setError(null);
     setChecked(CHECKLIST_ITEMS.map(() => false));
     setSearchResult({
       home,
       away,
-      leagueLabel: league.label,
-      links: generateStatsLinks(home, away, league),
+      links: generateStatsLinks(home, away),
     });
     requestAnimationFrame(() => {
       document.getElementById('stats-finder-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -150,8 +135,8 @@ export function FootballStatsFinder() {
         Football Stats <span className="text-green">Finder</span>
       </h1>
       <p className="text-[#888] text-sm mb-7 leading-relaxed max-w-[750px]">
-        Zadej dva týmy a ligu — vygenerujeme ti přesné odkazy na stránky, kde najdeš všechny statistiky potřebné pro
-        Value Bet kalkulačku. Žádné hledání, jeden klik = správná stránka.
+        Zadej dva týmy — vygenerujeme ti přesné odkazy na stránky, kde najdeš všechny statistiky potřebné pro Value Bet
+        kalkulačku. Jeden klik = správná stránka s daty.
       </p>
 
       <div className="bg-[#141414] border border-[#222] rounded-xl p-6 mb-5">
@@ -160,7 +145,7 @@ export function FootballStatsFinder() {
           Najdi zápas
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
           <div>
             <label className="block text-[11px] uppercase text-[#888] mb-1.5 tracking-wide">Domácí tým</label>
             <input
@@ -184,20 +169,6 @@ export function FootballStatsFinder() {
               placeholder="např. Slavia Praha"
               autoComplete="off"
             />
-          </div>
-          <div>
-            <label className="block text-[11px] uppercase text-[#888] mb-1.5 tracking-wide">Liga / Soutěž</label>
-            <select className={selectClass} value={leagueValue} onChange={(e) => setLeagueValue(e.target.value)}>
-              {LEAGUE_GROUPS.map((group) => (
-                <optgroup key={group} label={group}>
-                  {LEAGUE_OPTIONS.filter((l) => l.group === group).map((league) => (
-                    <option key={league.value} value={league.value}>
-                      {league.label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
           </div>
         </div>
 
@@ -225,23 +196,22 @@ export function FootballStatsFinder() {
 
       {searchResult ? (
         <div id="stats-finder-results">
-          <div className="flex items-center justify-center gap-5 p-5 mb-2 bg-[#141414] border border-[#222] rounded-xl max-[850px]:flex-col max-[850px]:gap-2.5">
+          <div className="flex items-center justify-center gap-6 p-6 mb-5 bg-[#141414] border border-[#222] rounded-xl max-[850px]:flex-col max-[850px]:gap-2.5">
             <div className="text-center flex-1">
-              <div className="text-xl font-extrabold uppercase">{searchResult.home}</div>
+              <div className="text-[22px] font-extrabold uppercase">{searchResult.home}</div>
               <div className="text-xs text-[#888] mt-1">Domácí</div>
             </div>
             <div className="text-2xl font-black text-green">VS</div>
             <div className="text-center flex-1">
-              <div className="text-xl font-extrabold uppercase">{searchResult.away}</div>
+              <div className="text-[22px] font-extrabold uppercase">{searchResult.away}</div>
               <div className="text-xs text-[#888] mt-1">Hosté</div>
             </div>
           </div>
-          <div className="text-center text-[13px] text-[#888] mb-5">{searchResult.leagueLabel}</div>
 
           <div className="bg-green/[0.06] border border-green/20 rounded-[10px] px-5 py-4 mb-5 text-sm text-[#ccc] leading-relaxed">
-            <strong className="text-green">📋 Jak na to:</strong> Otevři odkazy níže (každý se otevře v novém tabu). Na
-            každé stránce najdeš konkrétní data popsaná v sekci „Co tam najdeš“. Až budeš mít všechno, zaškrtej
-            checklist dole a přejdi do Value Bet kalkulačky.
+            <strong className="text-green">📋 Jak na to:</strong> Klikni na odkazy níže — každý se otevře v novém tabu.
+            Na každé stránce najdeš konkrétní data popsaná v sekci „Co tam najdeš“. Zaškrtávej checklist dole a až budeš
+            mít vše, přejdi do Value Bet kalkulačky.
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
@@ -250,32 +220,32 @@ export function FootballStatsFinder() {
               title="Statistiky týmů"
               description="Průměr vstřelených a obdržených gólů na zápas, doma i venku. Základ pro Poissonův model."
               dataItems={[
-                'Góly vstřelené doma / venku (průměr na zápas)',
-                'Góly obdržené doma / venku (průměr na zápas)',
-                'Počet odehraných zápasů (velikost vzorku)',
-                'xG (expected goals) na FBref',
+                'Góly vstřelené doma / venku (průměr)',
+                'Góly obdržené doma / venku (průměr)',
+                'Počet odehraných zápasů',
+                'Celkové skóre sezóny',
               ]}
               links={searchResult.links.teamStats}
             />
             <LinkCategory
               icon="🏟️"
               title="Ligové průměry"
-              description="Celkový průměr gólů na zápas v lize, průměr domácích a hostujících týmů. Slouží jako baseline pro výpočet útočné síly a obranné slabosti."
+              description="Celkový průměr gólů na zápas v lize, průměr domácích a hostujících týmů. Baseline pro výpočet útočné síly a obranné slabosti."
               dataItems={[
                 'Průměr gólů na zápas (celá liga)',
                 'Průměr gólů domácích týmů',
                 'Průměr gólů hostujících týmů',
-                'Tabulka ligy a formu týmů',
+                'Tabulka ligy',
               ]}
               links={searchResult.links.league}
             />
             <LinkCategory
               icon="⚔️"
               title="Vzájemné zápasy (H2H)"
-              description="Výsledky posledních 3 vzájemných zápasů mezi těmito týmy. Kalkulačka je váží 50/30/20 % (nejnovější = nejvíc)."
+              description="Výsledky posledních 3 vzájemných zápasů. Kalkulačka je váží 50/30/20 % (nejnovější = nejvíc)."
               dataItems={[
                 'Poslední 3 vzájemné zápasy (skóre)',
-                'Historická bilance (výhry/remízy/prohry)',
+                'Historická bilance',
                 'Průměr gólů ve vzájemných zápasech',
               ]}
               links={searchResult.links.h2h}
@@ -285,10 +255,10 @@ export function FootballStatsFinder() {
               title="Kurzy bookmakerů"
               description="Aktuální kurzy na 1X2, Over/Under a BTTS. Porovnej víc bookmakerů — hledej nejvyšší kurz."
               dataItems={[
-                'Kurzy 1X2 od desítek bookmakerů',
+                'Kurzy 1X2 od více bookmakerů',
                 'Over/Under 2.5 kurzy',
                 'BTTS (oba skórují) kurzy',
-                'Pohyb kurzů (opening → current)',
+                'Pohyb kurzů',
               ]}
               links={searchResult.links.odds}
             />

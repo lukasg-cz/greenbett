@@ -4,7 +4,7 @@ import { FootballStatsFinder } from '@/components/tools/FootballStatsFinder';
 export const metadata: Metadata = {
   title: 'Football Stats Finder',
   description:
-    'Zadej dva týmy a ligu — vygeneruj přesné odkazy na statistiky, H2H a kurzy pro Value Bet kalkulačku.',
+    'Zadej dva týmy — vygeneruj přesné odkazy na statistiky, H2H a kurzy pro Value Bet kalkulačku.',
 };
 
 export default function StatsFinderPage() {
