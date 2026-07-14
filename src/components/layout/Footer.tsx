@@ -26,13 +26,15 @@ export function Footer() {
                 { href: '/sporty/basketball', label: 'Basketbal' },
                 { href: '/sporty/tennis', label: 'Tenis' },
                 { href: '/sporty/esports', label: 'Esporty' },
+                { href: '/kurzy', label: 'Porovnání kurzů' },
+                { href: '/live', label: 'Live Dashboard' },
               ],
             },
             {
               title: 'Nástroje',
               links: [
-                { href: '/kurzy', label: 'Porovnání kurzů' },
                 { href: '/scanner', label: 'Value Scanner' },
+                { href: '/nastroje/value-bet', label: 'Value Bet kalkulačka' },
                 { href: '/kalkulacka', label: 'Kalkulačka' },
                 { href: '/nastroje/poisson', label: 'Poisson kalkulačka' },
                 { href: '/statistiky', label: 'Statistiky lig' },

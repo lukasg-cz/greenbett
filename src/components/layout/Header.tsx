@@ -32,8 +32,8 @@ export function Header() {
             <MegaDropdown>
               <MegaTitle>Analytické nástroje</MegaTitle>
               <div className="grid grid-cols-1 gap-0">
-                <MegaItem href="/kurzy" icon="fa-balance-scale" title="Porovnání kurzů" description="Porovnej kurzy napříč českými sázkovkami" />
                 <MegaItem href="/scanner" icon="fa-radar" title="Value Bet Scanner" description="Automatická detekce value příležitostí" />
+                <MegaItem href="/nastroje/value-bet" icon="fa-chart-line" title="Value Bet kalkulačka" description="EV, edge a doporučená sázka podle Kellyho" />
                 <MegaItem href="/kalkulacka" icon="fa-calculator" title="Bankroll Kalkulačka" description="Kelly criterion, flat staking, optimální stake" />
                 <MegaItem href="/nastroje/poisson" icon="fa-futbol" title="Poisson kalkulačka" description="Pravděpodobnosti gólů, 1X2, over/under a BTTS" />
                 <MegaItem href="/statistiky" icon="fa-chart-bar" title="Statistiky lig" description="Komplexní data per liga a tým" />

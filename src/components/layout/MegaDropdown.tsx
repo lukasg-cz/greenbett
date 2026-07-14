@@ -15,7 +15,7 @@ const sportItems: MegaItem[] = [
   { href: '/sporty', icon: 'fa-chart-line', title: 'Signály & Analýzy', description: 'Denní tipy s confidence skóre a strategií' },
   { href: '/live', icon: 'fa-satellite-dish', title: 'Live Dashboard', description: 'Živé zápasy, skóre a pohyb kurzů' },
   { href: '/statistiky', icon: 'fa-table', title: 'Statistiky lig', description: 'Tabulky, průměry gólů, H2H, trendy' },
-  { href: '/scanner', icon: 'fa-search-dollar', title: 'Value Bet Scanner', description: 'Najdi sázky s kladnou očekávanou hodnotou' },
+  { href: '/kurzy', icon: 'fa-balance-scale', title: 'Porovnání kurzů', description: 'Porovnej kurzy napříč českými sázkovkami' },
 ];
 
 const sports = [
