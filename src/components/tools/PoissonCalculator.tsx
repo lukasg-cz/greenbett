@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import {
   calculatePoisson,
@@ -365,9 +366,9 @@ export function PoissonCalculator() {
                 </div>
                 <p className="text-[0.75rem] text-gray-500 mt-6 leading-relaxed">
                   Model předpokládá nezávislost gólů obou týmů. Pro pokročilé modelování viz{' '}
-                  <a href="/skola/modely-pravdepodobnosti" className="text-green hover:underline">
+                  <Link href="/skola/modely-pravdepodobnosti" className="text-green hover:underline">
                     kurz Poisson model
-                  </a>{' '}
+                  </Link>{' '}
                   ve Škole sázení.
                 </p>
               </div>
