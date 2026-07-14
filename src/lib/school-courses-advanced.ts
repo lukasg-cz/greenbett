@@ -226,7 +226,7 @@ export const ADVANCED_COURSES: SchoolCourse[] = [
         title: 'Injury report a sestavy',
         summary: 'Kdy absence mění kurz a jak rychle reagovat.',
         paragraphs: [
-          'Absence klíčového útočníka nebo brankáře může posunout fair odds o 5–15 %. Sleduj oficiální Twitter klubů, L'Équipe, lokální reportéry.',
+          "Absence klíčového útočníka nebo brankáře může posunout fair odds o 5–15 %. Sleduj oficiální Twitter klubů, L'Équipe, lokální reportéry.",
           'Rotace před evropskými poháry — top týmy v lize B sestavě = value na soupeře, pokud trh nereagoval.',
           'Ne vsázej na rumor — počkej na oficiální sestavu nebo ověřený zdroj. Falešný tip na „zvěst zranění" stojí peníze.',
         ],
