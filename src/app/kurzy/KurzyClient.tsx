@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { FilterButton } from '@/components/ui/FilterButton';
-import { ODDS_SPORTS } from '@/lib/api/odds-comparison';
-import type { OddsComparisonResult, OddsEventSummary } from '@/lib/api/odds-comparison';
+import { ODDS_SPORTS } from '@/lib/api/odds-comparison.shared';
+import type { OddsComparisonResult, OddsEventSummary } from '@/lib/api/odds-comparison.shared';
 
 export default function KurzyClient() {
   const [sport, setSport] = useState('soccer_epl');
@@ -68,7 +68,7 @@ export default function KurzyClient() {
     fetchEvents('');
   }, [fetchEvents]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     setSelectedEventId(null);
     setComparison(null);
