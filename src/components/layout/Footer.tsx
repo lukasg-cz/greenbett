@@ -34,6 +34,7 @@ export function Footer() {
                 { href: '/kurzy', label: 'Porovnání kurzů' },
                 { href: '/scanner', label: 'Value Scanner' },
                 { href: '/kalkulacka', label: 'Kalkulačka' },
+                { href: '/nastroje/poisson', label: 'Poisson kalkulačka' },
                 { href: '/statistiky', label: 'Statistiky lig' },
               ],
             },

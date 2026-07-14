@@ -8,6 +8,7 @@ const navLinks = [
   { href: '/kurzy', label: 'Porovnání kurzů' },
   { href: '/scanner', label: 'Value Scanner' },
   { href: '/kalkulacka', label: 'Kalkulačka' },
+  { href: '/nastroje/poisson', label: 'Poisson' },
   { href: '/statistiky', label: 'Statistiky' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/forum', label: 'Fórum' },
