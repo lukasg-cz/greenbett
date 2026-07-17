@@ -28,6 +28,8 @@ export function Footer() {
                 { href: '/sporty/esports', label: 'Esporty' },
                 { href: '/kurzy', label: 'Porovnání kurzů' },
                 { href: '/live', label: 'Live Dashboard' },
+                { href: '/statistiky', label: 'Statistiky lig' },
+                { href: '/vysledky', label: 'Signály & Analýzy' },
               ],
             },
             {
@@ -38,7 +40,6 @@ export function Footer() {
                 { href: '/nastroje/stats-finder', label: 'Football Stats Finder' },
                 { href: '/kalkulacka', label: 'Kalkulačka' },
                 { href: '/nastroje/poisson', label: 'Poisson kalkulačka' },
-                { href: '/statistiky', label: 'Statistiky lig' },
               ],
             },
             {

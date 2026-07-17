@@ -37,7 +37,6 @@ export function Header() {
                 <MegaItem href="/nastroje/stats-finder" icon="fa-magnifying-glass-chart" title="Football Stats Finder" description="Odkazy na statistiky, H2H a kurzy pro kalkulačku" />
                 <MegaItem href="/kalkulacka" icon="fa-calculator" title="Bankroll Kalkulačka" description="Kelly criterion, flat staking, optimální stake" />
                 <MegaItem href="/nastroje/poisson" icon="fa-futbol" title="Poisson kalkulačka" description="Pravděpodobnosti gólů, 1X2, over/under a BTTS" />
-                <MegaItem href="/statistiky" icon="fa-chart-bar" title="Statistiky lig" description="Komplexní data per liga a tým" />
               </div>
             </MegaDropdown>
           </li>

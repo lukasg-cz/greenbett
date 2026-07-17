@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { MOCK_SIGNALS } from '@/lib/api/mock-data';
 
 interface MegaItem {
   href: string;
@@ -12,7 +13,7 @@ interface MegaItem {
 }
 
 const sportItems: MegaItem[] = [
-  { href: '/sporty', icon: 'fa-chart-line', title: 'Signály & Analýzy', description: 'Denní tipy s confidence skóre a strategií' },
+  { href: '/vysledky', icon: 'fa-chart-line', title: 'Signály & Analýzy', description: 'Denní tipy s confidence skóre a strategií' },
   { href: '/live', icon: 'fa-satellite-dish', title: 'Live Dashboard', description: 'Živé zápasy, skóre a pohyb kurzů' },
   { href: '/statistiky', icon: 'fa-table', title: 'Statistiky lig', description: 'Tabulky, průměry gólů, H2H, trendy' },
   { href: '/kurzy', icon: 'fa-balance-scale', title: 'Porovnání kurzů', description: 'Porovnej kurzy napříč českými sázkovkami' },
@@ -37,6 +38,18 @@ interface MegaDropdownProps {
 export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProps) {
   const router = useRouter();
   const [activeSport, setActiveSport] = useState('football');
+
+  const previewSignals = useMemo(() => {
+    return MOCK_SIGNALS.filter((signal) => signal.sport === activeSport)
+      .sort((a, b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (b.status === 'pending' && a.status !== 'pending') return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+      .slice(0, 3);
+  }, [activeSport]);
+
+  const activeSportLabel = sports.find((sport) => sport.id === activeSport)?.label ?? activeSport;
 
   return (
     <div
@@ -70,11 +83,7 @@ export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProp
             {sportItems.map((item) => (
               <Link
                 key={item.title}
-                href={
-                  item.href === '/sporty'
-                    ? `/sporty/${activeSport}`
-                    : `${item.href}?sport=${activeSport}`
-                }
+                href={`${item.href}?sport=${activeSport}`}
                 className="flex items-start gap-3.5 p-3.5 px-4 rounded-sm transition-all hover:bg-off-white no-underline cursor-pointer"
               >
                 <div className="w-10 h-10 min-w-10 bg-gradient-to-br from-green to-green-dark rounded-sm flex items-center justify-center text-black">
@@ -86,6 +95,48 @@ export function MegaDropdown({ wide, children, showSportTabs }: MegaDropdownProp
                 </div>
               </Link>
             ))}
+          </div>
+
+          <div className="mt-5 pt-5 border-t border-[#eee]">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[0.7rem] font-bold uppercase tracking-[2px] text-green-dark">
+                Aktuální signály — {activeSportLabel}
+              </div>
+              <Link
+                href={`/vysledky?sport=${activeSport}`}
+                className="text-[0.75rem] font-semibold text-green-dark no-underline hover:underline"
+              >
+                Zobrazit vše →
+              </Link>
+            </div>
+            {previewSignals.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {previewSignals.map((signal) => (
+                  <Link
+                    key={signal.id}
+                    href={`/vysledky?sport=${activeSport}`}
+                    className="flex items-center justify-between gap-3 px-3.5 py-2.5 bg-[#f8f8f8] border border-[#eee] rounded-md no-underline hover:border-green-dark/40 transition-all"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-[0.82rem] font-semibold text-dark truncate">
+                        {signal.matchHome} vs {signal.matchAway}
+                      </div>
+                      <div className="text-[0.72rem] text-gray-500 truncate">
+                        {signal.market} · kurz {signal.odds.toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-[0.72rem] font-bold text-green-dark">{signal.confidence}/10</div>
+                      <div className="text-[0.65rem] uppercase text-gray-400">{signal.status}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3.5 py-3 bg-[#f8f8f8] border border-[#eee] rounded-md text-[0.78rem] text-gray-500">
+                Pro tento sport zatím nemáme žádné signály. Zkus jiný sport nebo se podívej na celou evidenci.
+              </div>
+            )}
           </div>
         </>
       )}
