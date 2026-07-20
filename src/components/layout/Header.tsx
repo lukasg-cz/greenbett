@@ -51,8 +51,13 @@ export function Header() {
               <div className="grid grid-cols-1 gap-0">
                 <MegaItem href="/leaderboard" icon="fa-trophy" title="Tipérský Leaderboard" description="Žebříček nejúspěšnějších tipérů" />
                 <MegaItem href="/forum" icon="fa-comments" title="Fórum & Diskuze" description="Diskutuj o zápasech a strategiích" />
-                <MegaItem href="/kontakt" icon="fa-paper-plane" title="Telegram skupina" description="Připoj se k 1 800+ aktivním členům" />
+                <MegaItem href="https://t.me/greenbett_cz" icon="fa-paper-plane" title="Telegram skupina" description="Připoj se k 1 800+ aktivním členům" />
               </div>
+              <MegaSection title="Kontakt">
+                <MegaItem href="mailto:podpora@greenbett.cz" icon="fa-envelope" title="Email podpora" description="podpora@greenbett.cz · odpovídáme do 24 hodin" />
+                <MegaItem href="/kontakt" icon="fa-headset" title="Kontakt & podpora" description="Všechny kanály, formulář a provozní doba" />
+                <MegaItem href="https://discord.gg/greenbett" icon="fa-discord" title="Discord server" description="Komunitní diskuze a live chat o zápasech" />
+              </MegaSection>
             </MegaDropdown>
           </li>
 
