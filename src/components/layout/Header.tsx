@@ -72,6 +72,7 @@ export function Header() {
                   <MegaTitle>Naučit se</MegaTitle>
                   <MegaItem href="/skola" icon="fa-book" title="Škola sázení" description="Články a návody pro začátečníky i pokročilé" />
                   <MegaItem href="/glosar" icon="fa-spell-check" title="Glosář pojmů" description="Value bet, EV, yield, handicap..." />
+                  <MegaItem href="/sazkove-kancelare" icon="fa-building" title="Sázkové kanceláře" description="Přehled licencovaných sázkovek v ČR" />
                   <MegaItem href="/faq" icon="fa-question-circle" title="FAQ" description="Odpovědi na časté dotazy" />
                 </div>
                 <div>

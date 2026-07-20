@@ -15,6 +15,8 @@ const navLinks = [
   { href: '/statistiky', label: 'Statistiky' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/forum', label: 'Fórum' },
+  { href: '/skola', label: 'Škola sázení' },
+  { href: '/sazkove-kancelare', label: 'Sázkové kanceláře' },
   { href: '/vysledky', label: 'Výsledky' },
   { href: '/cenik', label: 'Ceník' },
 ];
